@@ -1,24 +1,25 @@
 version: '3.8'
 
 services:
-  postgres:
+  snippetManagerDB:
     image: postgres:latest
     ports:
-      - "5433:5432"
+      - "5433:5433"
     env_file:
       - .env
 
-  spring-app:
+  snipperManagerAPI:
+    image: snippetmanagerapi
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
+      - snippetManagerDB
     env_file:
       - .env
-    platform: linux/amd64
+
 
 volumes:
   postgres_data:
