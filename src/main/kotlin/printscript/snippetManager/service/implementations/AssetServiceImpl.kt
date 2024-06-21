@@ -12,7 +12,6 @@ class AssetServiceImpl(
     @Value("\${bucket.url}")
     private val bucketUrl: String,
 ) : AssetService {
-
     override fun saveSnippetInBucket(
         snippetId: Long,
         code: String,
