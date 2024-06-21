@@ -5,13 +5,19 @@ import org.springframework.stereotype.Service
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.entity.Snippet
+import printscript.snippetManager.entity.SnippetStatus
 import printscript.snippetManager.repository.SnippetRepository
+import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
 
 @Service
-class SnippetManagerServiceImpl(val snippetRepository: SnippetRepository, val assetService: AssetService) :
+class SnippetManagerServiceImpl(
+    val snippetRepository: SnippetRepository,
+    val snippetStatusRepository: SnippetStatusRepository,
+    val assetService: AssetService,
+) :
     SnippetManagerService {
     override fun createSnippet(
         snippet: SnippetInputDTO,
@@ -23,6 +29,15 @@ class SnippetManagerServiceImpl(val snippetRepository: SnippetRepository, val as
                     name = snippet.name,
                     language = snippet.language,
                     author = userData.email,
+                ),
+            )
+
+        val snippetStatus =
+            snippetStatusRepository.save(
+                SnippetStatus(
+                    userEmail = userData.email,
+                    snippet = savedSnippet,
+                    status = printscript.snippetManager.enums.SnippetStatus.PENDING,
                 ),
             )
 
@@ -38,6 +53,7 @@ class SnippetManagerServiceImpl(val snippetRepository: SnippetRepository, val as
                     ),
                 ),
             ).onErrorResume { error ->
+                snippetStatusRepository.delete(snippetStatus)
                 snippetRepository.delete(savedSnippet)
                 throw Error("Error al guardar el snippet: ${error.message}")
             }
