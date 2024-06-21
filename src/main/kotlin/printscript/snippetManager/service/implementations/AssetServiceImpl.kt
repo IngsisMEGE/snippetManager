@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 @Service
 class AssetServiceImpl(
     private val webClient: WebClient,
-    @Autowired private val dotenv: Dotenv
+    @Autowired private val dotenv: Dotenv,
 ) : AssetService {
     private val bucketUrl = "${dotenv["BUCKET_URL"]}/v1/asset/snippet" // deberia ser una variable de entorno
 
