@@ -31,16 +31,12 @@ jobs:
       - name: Create.env file
         run: |
           echo "BUCKET_URL="Hello"" >> .env
-          
-
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build
         run: ./gradlew build
-        env:
-          API_KEY: ${{ secrets.BUCKET_URL }}
 
 
 
