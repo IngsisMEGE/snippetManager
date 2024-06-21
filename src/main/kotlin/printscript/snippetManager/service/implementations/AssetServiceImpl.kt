@@ -1,6 +1,5 @@
 package printscript.snippetManager.service.implementations
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import printscript.snippetManager.service.interfaces.AssetService
@@ -9,9 +8,9 @@ import reactor.core.publisher.Mono
 @Service
 class AssetServiceImpl(
     val webClient: WebClient,
-    @Value("\${bucket.url}")
-    private val bucketUrl: String,
 ) : AssetService {
+    private val bucketUrl = "http://localhost:8080/v1/asset/snippet" // deberia ser una variable de entorno
+
     override fun saveSnippetInBucket(
         snippetId: Long,
         code: String,
