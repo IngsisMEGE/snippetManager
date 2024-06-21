@@ -1,6 +1,6 @@
 package printscript.snippetManager.service.implementations
 
-import org.springframework.security.oauth2.core.oidc.user.OidcUser
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
@@ -21,21 +21,21 @@ class SnippetManagerServiceImpl(
     SnippetManagerService {
     override fun createSnippet(
         snippet: SnippetInputDTO,
-        userData: OidcUser,
+        userData: Jwt,
     ): Mono<SnippetOutputDTO> {
         val savedSnippet =
             snippetRepository.save(
                 Snippet(
                     name = snippet.name,
                     language = snippet.language,
-                    author = userData.email,
+                    author = userData.claims["email"].toString(),
                 ),
             )
 
         val snippetStatus =
             snippetStatusRepository.save(
                 SnippetStatus(
-                    userEmail = userData.email,
+                    userEmail = userData.claims["email"].toString(),
                     snippet = savedSnippet,
                     status = printscript.snippetManager.enums.SnippetStatus.PENDING,
                 ),

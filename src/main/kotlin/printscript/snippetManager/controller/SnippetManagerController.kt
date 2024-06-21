@@ -3,7 +3,7 @@ package printscript.snippetManager.controller
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.oauth2.core.oidc.user.OidcUser
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -19,7 +19,7 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     @PostMapping("/create")
     fun createSnippetInEditor(
         @Valid @RequestBody snippet: SnippetInputDTO,
-        @AuthenticationPrincipal userData: OidcUser,
+        @AuthenticationPrincipal userData: Jwt,
     ): Mono<ResponseEntity<SnippetOutputDTO>> {
         return try {
             snippetManagerService.createSnippet(snippet, userData)
