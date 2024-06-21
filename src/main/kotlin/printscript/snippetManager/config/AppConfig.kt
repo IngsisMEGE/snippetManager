@@ -1,5 +1,6 @@
 package printscript.snippetManager.config
 
+import io.github.cdimascio.dotenv.Dotenv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
@@ -9,5 +10,10 @@ class AppConfig {
     @Bean
     fun webClient(): WebClient {
         return WebClient.builder().build()
+    }
+
+    @Bean
+    fun dotenv(): Dotenv {
+        return Dotenv.load()
     }
 }

@@ -1,5 +1,7 @@
 package printscript.snippetManager.service.implementations
 
+import io.github.cdimascio.dotenv.Dotenv
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import printscript.snippetManager.service.interfaces.AssetService
@@ -7,9 +9,10 @@ import reactor.core.publisher.Mono
 
 @Service
 class AssetServiceImpl(
-    val webClient: WebClient,
+    private val webClient: WebClient,
+    @Autowired private val dotenv: Dotenv
 ) : AssetService {
-    private val bucketUrl = "http://localhost:8080/v1/asset/snippet" // deberia ser una variable de entorno
+    private val bucketUrl = "${dotenv["BUCKET_URL"]}/v1/asset/snippet" // deberia ser una variable de entorno
 
     override fun saveSnippetInBucket(
         snippetId: Long,
