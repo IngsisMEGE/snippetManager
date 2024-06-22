@@ -36,7 +36,17 @@ class AssetServiceImpl(
         TODO("Not yet implemented")
     }
 
-    override fun deleteSnippetFromBucket(snippetId: Long) {
-        TODO("Not yet implemented")
+    override fun deleteSnippetFromBucket(snippetId: Long): Mono<Void> {
+        val snippetUrl = "$bucketUrl/$snippetId"
+
+        return webClient.delete()
+            .uri(snippetUrl)
+            .retrieve()
+            .onStatus({ it.is4xxClientError || it.is5xxServerError }, {
+                it.bodyToMono(String::class.java)
+                    .map { errorBody -> Exception("Error al eliminar el snippet: $errorBody") }
+            })
+            .toBodilessEntity()
+            .then()
     }
 }

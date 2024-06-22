@@ -2,6 +2,7 @@ package printscript.snippetManager.service.implementations
 
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
+import printscript.snippetManager.controller.payload.request.SnippetEditDTO
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.entity.Snippet
@@ -55,6 +56,40 @@ class SnippetManagerServiceImpl(
             ).onErrorResume { error ->
                 snippetStatusRepository.delete(snippetStatus)
                 snippetRepository.delete(savedSnippet)
+                throw Error("Error al guardar el snippet: ${error.message}")
+            }
+    }
+
+    override fun editSnippet(
+        id: Long,
+        editedCode: SnippetEditDTO,
+        userData: Jwt,
+    ): Mono<SnippetOutputDTO> {
+        val snippet = snippetRepository.findById(id)
+        if (snippet.isEmpty) throw Error("Snippet no encontrado")
+
+        if (snippet.get().author != userData.claims["email"].toString()) throw Error("No tienes permisos para editar este snippet")
+
+        val snippetStatus = snippetStatusRepository.findBySnippetIdAndUserEmail(id, userData.claims["email"].toString())
+        if (snippetStatus.isEmpty) throw Error("No te han compartido este snippet")
+        snippetStatus.get().status = printscript.snippetManager.enums.SnippetStatus.PENDING
+
+        snippetStatusRepository.save(snippetStatus.get())
+
+        assetService.deleteSnippetFromBucket(id).block()
+
+        return assetService.saveSnippetInBucket(id, editedCode.code)
+            .then(
+                Mono.just(
+                    SnippetOutputDTO(
+                        id = snippet.get().id,
+                        name = snippet.get().name,
+                        language = snippet.get().language,
+                        code = editedCode.code,
+                        author = snippet.get().author,
+                    ),
+                ),
+            ).onErrorResume { error ->
                 throw Error("Error al guardar el snippet: ${error.message}")
             }
     }

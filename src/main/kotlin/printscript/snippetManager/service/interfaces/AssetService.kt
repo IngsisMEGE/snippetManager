@@ -10,5 +10,5 @@ interface AssetService {
 
     fun getSnippetFromBucket(snippetId: Long): String
 
-    fun deleteSnippetFromBucket(snippetId: Long)
+    fun deleteSnippetFromBucket(snippetId: Long): Mono<Void>
 }

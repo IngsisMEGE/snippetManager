@@ -12,7 +12,7 @@ data class SnippetStatus(
     val userEmail: String,
     @ManyToOne
     val snippet: Snippet,
-    val status: SnippetStatus,
+    var status: SnippetStatus,
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

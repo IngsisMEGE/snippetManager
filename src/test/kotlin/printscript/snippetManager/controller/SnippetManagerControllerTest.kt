@@ -35,18 +35,18 @@ class SnippetManagerControllerTest {
     private val testJwt =
         "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ildmak1Jb3BXb2lDQzNydFN5azM2UiJ9." +
             "eyJuaWNrbmFtZSI6InRlc3QiLCJuYW1lIjoidGVzdEB0ZXN0LmNvbSIsInBpY3R1cmUiOiJ" +
-            "odHRwczovL3MuZ3JhdmF0YXIuY29tL2F2YXRhci9iNjQyYjQyMTdiMzRiMWU4ZDNiZDkxNWZjNj" +
-            "VjNDQ1Mj9zPTQ4MCZyPXBnJmQ9aHR0cHMlM0ElMkYlMkZjZG4uYXV0aDAuY29tJTJGYXZhdGFycyUy" +
-            "RnRlLnBuZyIsInVwZGF0ZWRfYXQiOiIyMDI0LTA2LTIyVDAwOjI2OjM5LjY3NVoiLCJlbWFpbCI6InRlc" +
-            "3RAdGVzdC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImlzcyI6Imh0dHBzOi8vZGV2LTBldDNjZXdoc" +
-            "Go1aGx0d24udXMuYXV0aDAuY29tLyIsImF1ZCI6IlY2QkszZWtVUjlySDlhVjM5bGtTWVJXQmhFV2dSMmtRIiwia" +
-            "WF0IjoxNzE5MDE2MDAwLCJleHAiOjE3MTkwNTIwMDAsInN1YiI6ImF1dGgwfDY2NzVkMjczYTAwMDZiMjkxZDk1ZTY" +
-            "yMyIsInNpZCI6IjJiU2U2c2p4S3JEamZfTTR5UThCX0IzVDVqNjh1dDhOIiwibm9uY2UiOiJMbTl3UmpKRlYydGtOSE5KYmp" +
-            "kME5tdDFRelp1VG1JMlEzZGxiVmd6VmtveFVGaHRZaTV6YTBkWE9RPT0ifQ.c5DncfTQ06xz3uM8E0VW4CDeZR_T120OH5oz7" +
-            "8H0ByWUXoUvqXaE9L6_9OZVm3mK-zkFtwzhN74nNUHW38v4-hn4awnijcI5uMFfBNW01WU5B8VBd1fbVm61Bxv4J-eEPex9-_s5" +
-            "-tPXMshx4InYtQKkvMXhXjS8-OLvD0SPT-2U8ZJkZPGakC0h8L5PWNamRsxJhIq2cE8wHEmwvdPbLV51iiT9QMD7NXNzW8R5y1Ot" +
-            "FarKa_ZkIpiUy3wTESqSU3qbjUS8QnlYH_wrMpajCPlsKv0dzqv9NTKjcdmGctnyPP-nOp60XRG9T_RD5rZRthrU0-GU3ecV" +
-            "-Jn5tYFHvw"
+            "odHRwczovL3MuZ3JhdmF0YXIuY29tL2F2YXRhci9iNjQyYjQyMTdiMzRiMWU4ZDNiZDkxNW" +
+            "ZjNjVjNDQ1Mj9zPTQ4MCZyPXBnJmQ9aHR0cHMlM0ElMkYlMkZjZG4uYXV0aDAuY29tJTJGYX" +
+            "ZhdGFycyUyRnRlLnBuZyIsInVwZGF0ZWRfYXQiOiIyMDI0LTA2LTIyVDAwOjI2OjM5LjY3NVoi" +
+            "LCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImlzcyI6Imh" +
+            "0dHBzOi8vZGV2LTBldDNjZXdocGo1aGx0d24udXMuYXV0aDAuY29tLyIsImF1ZCI6IlY2QkszZWtVU" +
+            "jlySDlhVjM5bGtTWVJXQmhFV2dSMmtRIiwiaWF0IjoxNzE5MDkyMTAxLCJleHAiOjE3MTkxMjgxMDEsI" +
+            "nN1YiI6ImF1dGgwfDY2NzVkMjczYTAwMDZiMjkxZDk1ZTYyMyIsInNpZCI6IjJiU2U2c2p4S3JEamZfTTR5" +
+            "UThCX0IzVDVqNjh1dDhOIiwibm9uY2UiOiJaSE5oWVVwbWJtZEROQzVCYW1kQ2JWUk5hakIwZEhCZlR6UldjV" +
+            "zl0WVZKUlRVMUNMVzAzWTB4ZmN3PT0ifQ.TH-OjAg9_iQIAyferbi1w-T4WLjqpDoXyJmRuuB1vqjtAk4cUSj1d" +
+            "X7PrkrPCIfkJ6nLKCWvf9NHGKQOz88XbSuuKBZptVtZ8ktF7I_6aaxdP88n57jrb_KpQUtT-MfDJdjukyd3_WbYS" +
+            "oRxeR1pxI85ZSiMrpqI054j9Hrh8ycEQ_rwrRegAwpldE1JTdBjhmInl2wY-dQ33-FN31bBVYmQRUGGo4WY8uadCDw6XO" +
+            "hkpx5D9yjfFwKa8zvC_zBIE3_DPt9BWjJYSrjuH6lQbomEprlNRVaNSp9Jr558iKq6SgsYkM0jD9ABaDOZyc-NQH5_PK_8DRJHhTN2EMTGMA"
 
     @Test
     fun test001_createSnippetInEditorWithAuthenticationShouldReturnOk() {
@@ -97,6 +97,71 @@ class SnippetManagerControllerTest {
                         "name": "",
                         "language": "PrintScript",
                         "code": "let a: number = 5;"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun test004_editSnippetInEditorWithAuthenticationShouldReturnOk() {
+        mockMvc.perform(
+            post("/snippetManager/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "name": "snippet",
+                        "language": "PrintScript",
+                        "code": "let a: number = 5;"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+
+        mockMvc.perform(
+            post("/snippetManager/edit/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "code": "let a: number = 10;"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun test005_editSnippetInEditorWithoutPayloadParametersShouldReturnBadRequest() {
+        mockMvc.perform(
+            post("/snippetManager/edit/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                    }
+                    """.trimIndent(),
+                ),
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun test006_editSnippetInEditorWithEmptyPayloadParametersShouldReturnBadRequest() {
+        mockMvc.perform(
+            post("/snippetManager/edit/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "code": ""
                     }
                     """.trimIndent(),
                 ),
