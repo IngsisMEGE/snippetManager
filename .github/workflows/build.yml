@@ -34,7 +34,8 @@ jobs:
       - name: Build
         run: ./gradlew build
         env:
-          API_KEY: ${{ secrets.BUCKET_URL }}
+          AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+          AUTH_SERVER_URI: ${{ secrets.AUTH_SERVER_URI }}
 
 
 
