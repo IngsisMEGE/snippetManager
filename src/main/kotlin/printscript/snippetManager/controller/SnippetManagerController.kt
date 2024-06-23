@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -57,6 +58,18 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     ): ResponseEntity<*> {
         return try {
             ResponseEntity.ok(snippetManagerService.searchSnippetsByFilter(filter, page, size, userData))
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @GetMapping("/get/{id}")
+    fun getSnippet(
+        @PathVariable id: Long,
+        @AuthenticationPrincipal userData: Jwt,
+    ): ResponseEntity<*> {
+        return try {
+            ResponseEntity.ok(snippetManagerService.getSnippetById(id, userData))
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)
         }
