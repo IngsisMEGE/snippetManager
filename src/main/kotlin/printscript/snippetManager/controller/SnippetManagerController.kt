@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import printscript.snippetManager.controller.payload.request.FilterDTO
 import printscript.snippetManager.controller.payload.request.SnippetEditDTO
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
@@ -43,6 +45,20 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         } catch (e: Exception) {
             println(e.message)
             Mono.just(ResponseEntity.badRequest().build())
+        }
+    }
+
+    @PostMapping("/search")
+    fun searchSnippets(
+        @RequestBody filter: FilterDTO,
+        @RequestParam page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @AuthenticationPrincipal userData: Jwt,
+    ): ResponseEntity<*> {
+        return try {
+            ResponseEntity.ok(snippetManagerService.searchSnippetsByFilter(filter, page, size, userData))
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
         }
     }
 }

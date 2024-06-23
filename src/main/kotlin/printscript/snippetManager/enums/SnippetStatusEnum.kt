@@ -1,6 +1,6 @@
 package printscript.snippetManager.enums
 
-enum class SnippetStatus {
+enum class SnippetStatusEnum {
     PENDING,
     COMPLIANT,
     NOT_COMPLIANT,

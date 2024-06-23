@@ -1,12 +1,19 @@
 package printscript.snippetManager.service.implementations
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
+import printscript.snippetManager.controller.payload.request.FilterDTO
 import printscript.snippetManager.controller.payload.request.SnippetEditDTO
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
+import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.entity.Snippet
 import printscript.snippetManager.entity.SnippetStatus
+import printscript.snippetManager.repository.FilterRepository
 import printscript.snippetManager.repository.SnippetRepository
 import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
@@ -18,6 +25,7 @@ class SnippetManagerServiceImpl(
     val snippetRepository: SnippetRepository,
     val snippetStatusRepository: SnippetStatusRepository,
     val assetService: AssetService,
+    val filterRepository: FilterRepository,
 ) :
     SnippetManagerService {
     override fun createSnippet(
@@ -33,12 +41,12 @@ class SnippetManagerServiceImpl(
                 ),
             )
 
-        val snippetStatus =
+        val snippetStatusEnum =
             snippetStatusRepository.save(
                 SnippetStatus(
                     userEmail = userData.claims["email"].toString(),
                     snippet = savedSnippet,
-                    status = printscript.snippetManager.enums.SnippetStatus.PENDING,
+                    status = printscript.snippetManager.enums.SnippetStatusEnum.PENDING,
                 ),
             )
 
@@ -54,7 +62,7 @@ class SnippetManagerServiceImpl(
                     ),
                 ),
             ).onErrorResume { error ->
-                snippetStatusRepository.delete(snippetStatus)
+                snippetStatusRepository.delete(snippetStatusEnum)
                 snippetRepository.delete(savedSnippet)
                 throw Error("Error al guardar el snippet: ${error.message}")
             }
@@ -72,7 +80,7 @@ class SnippetManagerServiceImpl(
 
         val snippetStatus = snippetStatusRepository.findBySnippetIdAndUserEmail(id, userData.claims["email"].toString())
         if (snippetStatus.isEmpty) throw Error("No te han compartido este snippet")
-        snippetStatus.get().status = printscript.snippetManager.enums.SnippetStatus.PENDING
+        snippetStatus.get().status = printscript.snippetManager.enums.SnippetStatusEnum.PENDING
 
         snippetStatusRepository.save(snippetStatus.get())
 
@@ -92,5 +100,15 @@ class SnippetManagerServiceImpl(
             ).onErrorResume { error ->
                 throw Error("Error al guardar el snippet: ${error.message}")
             }
+    }
+
+    override fun searchSnippetsByFilter(
+        filter: FilterDTO,
+        page: Int,
+        size: Int,
+        userData: Jwt,
+    ): Page<SnippetViewDTO> {
+        val pageAndSizeRequest: Pageable = PageRequest.of(page, size, Sort.by("id").descending())
+        return filterRepository.filterSnippets(filter, pageAndSizeRequest, userData.claims["email"].toString())
     }
 }
