@@ -11,8 +11,10 @@ import printscript.snippetManager.controller.payload.request.SnippetEditDTO
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
+import printscript.snippetManager.entity.SharedSnippet
 import printscript.snippetManager.entity.Snippet
 import printscript.snippetManager.entity.SnippetStatus
+import printscript.snippetManager.enums.SnippetStatusEnum
 import printscript.snippetManager.repository.FilterRepository
 import printscript.snippetManager.repository.SharedSnippetRepository
 import printscript.snippetManager.repository.SnippetRepository
@@ -48,7 +50,7 @@ class SnippetManagerServiceImpl(
                 SnippetStatus(
                     userEmail = userData.claims["email"].toString(),
                     snippet = savedSnippet,
-                    status = printscript.snippetManager.enums.SnippetStatusEnum.PENDING,
+                    status = SnippetStatusEnum.PENDING,
                 ),
             )
 
@@ -82,7 +84,7 @@ class SnippetManagerServiceImpl(
 
         val snippetStatus = snippetStatusRepository.findBySnippetIdAndUserEmail(id, userData.claims["email"].toString())
         if (snippetStatus.isEmpty) throw Error("No te han compartido este snippet")
-        snippetStatus.get().status = printscript.snippetManager.enums.SnippetStatusEnum.PENDING
+        snippetStatus.get().status = SnippetStatusEnum.PENDING
 
         snippetStatusRepository.save(snippetStatus.get())
 
@@ -137,6 +139,33 @@ class SnippetManagerServiceImpl(
             language = snippet.get().language,
             code = code,
             author = snippet.get().author,
+        )
+    }
+
+    override fun shareSnippet(
+        id: Long,
+        userData: Jwt,
+        shareEmail: String,
+    ) {
+        val snippet = snippetRepository.findById(id)
+        if (snippet.isEmpty) throw Error("Snippet no encontrado")
+
+        if (snippet.get().author != userData.claims["email"].toString()) throw Error("No tienes permisos para compartir este snippet")
+        if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, shareEmail)) throw Error("Ya compartiste este snippet con este usuario")
+
+        sharedSnippetRepository.save(
+            SharedSnippet(
+                userEmail = shareEmail,
+                snippet = snippet.get(),
+            ),
+        )
+
+        snippetStatusRepository.save(
+            SnippetStatus(
+                userEmail = shareEmail,
+                snippet = snippet.get(),
+                status = SnippetStatusEnum.PENDING,
+            ),
         )
     }
 }
