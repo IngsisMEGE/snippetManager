@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
-  snippetManagerDB:
+  snippetManagerPostgres:
     image: postgres:latest
     ports:
       - "5433:5433"
     env_file:
       - .env
+    volumes:
+      - snippet_manager_data:/var/lib/postgresql/data
 
   snipperManagerAPI:
     image: snippetmanagerapi
@@ -15,10 +17,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
-    depends_on:
-      - snippetManagerDB
     env_file:
       - .env
+    depends_on:
+      - snippetManagerPostgres
 
 
   api:
@@ -43,6 +45,6 @@ services:
       - blob:/workspace
 
 volumes:
-  postgres_data:
+  snippet_manager_data:
   blob:
       external: false
