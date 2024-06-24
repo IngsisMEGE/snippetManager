@@ -32,6 +32,7 @@ class OAuth2ResourceServerSecurityConfiguration(
                 .requestMatchers(GET, "/snippets").hasAuthority("SCOPE_read:snippets")
                 .requestMatchers(GET, "/snippets/*").hasAuthority("SCOPE_read:snippets")
                 .requestMatchers(POST, "/snippets").hasAuthority("SCOPE_write:snippets")
+                .requestMatchers(POST, "/snippetManager/*").hasAuthority("SCOPE_write:snippets")
                 .anyRequest().authenticated()
         }
             .oauth2ResourceServer { it.jwt(withDefaults()) }

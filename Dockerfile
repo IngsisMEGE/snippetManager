@@ -8,10 +8,13 @@ COPY src ./src
 
 COPY .editorconfig ./
 
+COPY fakeEnv .env
+
+WORKDIR /home/gradle/src
+
 RUN gradle build
 
-WORKDIR /app
 
 EXPOSE ${PORT}
 
-ENTRYPOINT ["java","-jar","/home/gradle/src/build/libs/usersManager-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","/home/gradle/src/build/libs/snippetManager-0.0.1-SNAPSHOT.jar"]
