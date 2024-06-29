@@ -8,9 +8,12 @@ COPY src ./src
 
 COPY .editorconfig ./
 
+COPY fakeEnv .env
+
+WORKDIR /home/gradle/src
+
 RUN gradle build
 
-WORKDIR /app
 
 EXPOSE ${PORT}
 
