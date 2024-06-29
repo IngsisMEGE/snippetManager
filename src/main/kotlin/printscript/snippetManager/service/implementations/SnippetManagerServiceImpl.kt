@@ -121,12 +121,12 @@ class SnippetManagerServiceImpl(
         userData: Jwt,
     ): SnippetOutputDTO {
         val snippet = snippetRepository.findById(id)
-        if (snippet.isEmpty) throw Error("Snippet no encontrado")
+        if (snippet.isEmpty) throw Exception("Snippet no encontrado")
 
         val email = userData.claims["email"].toString()
 
-        if (snippet.get().author != email || !sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
-            throw Error(
+        if (snippet.get().author != email || sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
+            throw Exception(
                 "No tienes permisos para ver este snippet",
             )
         }

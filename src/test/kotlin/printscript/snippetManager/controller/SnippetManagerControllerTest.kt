@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,6 +18,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import printscript.snippetManager.repository.SnippetRepository
@@ -193,6 +195,44 @@ class SnippetManagerControllerTest {
                     }
                     """.trimIndent(),
                 ),
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun test007_getSnippetShouldReturnOk() {
+        mockMvc.perform(
+            post("/snippetManager/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "name": "snippet",
+                        "language": "PrintScript",
+                        "code": "let a: number = 5;"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+
+        whenever(assetService.getSnippetFromBucket(1)).thenReturn("let a: number = 5;")
+
+        setUp()
+        mockMvc.perform(
+            get("/snippetManager/get/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt"),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun test008_getSnippetWithInvalidIdShouldReturnBadRequest() {
+        mockMvc.perform(
+            get("/snippetManager/get/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt"),
         )
             .andExpect(status().isBadRequest)
     }
