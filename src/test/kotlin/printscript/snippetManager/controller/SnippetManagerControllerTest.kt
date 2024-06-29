@@ -53,7 +53,7 @@ class SnippetManagerControllerTest {
     private val testJwt = "test"
 
     @BeforeEach
-    fun setUp() {
+    fun logIn() {
         val jwt =
             Jwt.withTokenValue(testJwt)
                 .header("alg", "RS256") // Add the algorithm header (you may adjust this based on your JWT)
@@ -150,7 +150,7 @@ class SnippetManagerControllerTest {
                 ),
         )
 
-        setUp()
+        logIn()
         mockMvc.perform(
             post("/snippetManager/edit/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -218,7 +218,7 @@ class SnippetManagerControllerTest {
 
         whenever(assetService.getSnippetFromBucket(1)).thenReturn("let a: number = 5;")
 
-        setUp()
+        logIn()
         mockMvc.perform(
             get("/snippetManager/get/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -233,6 +233,106 @@ class SnippetManagerControllerTest {
             get("/snippetManager/get/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer $testJwt"),
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun test009_shareSnippetShouldReturnOk() {
+        mockMvc.perform(
+            post("/snippetManager/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "name": "snippet",
+                        "language": "PrintScript",
+                        "code": "let a: number = 5;"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+
+        logIn()
+        mockMvc.perform(
+            post("/snippetManager/share/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .param("shareEmail", "test2@test2.com"),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun test010_shareSnippetWithInvalidIdShouldReturnBadRequest() {
+        mockMvc.perform(
+            post("/snippetManager/share/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .param("shareEmail", "test2@test2.com"),
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun test012_shareSnippetTwiceWithSameEmailShouldReturnBadRequest() {
+        mockMvc.perform(
+            post("/snippetManager/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "name": "snippet",
+                        "language": "PrintScript",
+                        "code": "let a: number = 5;"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+
+        logIn()
+        mockMvc.perform(
+            post("/snippetManager/share/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .param("shareEmail", "test2@test2.com"),
+        )
+
+        logIn()
+        mockMvc.perform(
+            post("/snippetManager/share/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .param("shareEmail", "test2@test2.com"),
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun test013_shareOwnSnippetShouldReturnBadRequest() {
+        mockMvc.perform(
+            post("/snippetManager/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "name": "snippet",
+                        "language": "PrintScript",
+                        "code": "let a: number = 5;"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+
+        logIn()
+        mockMvc.perform(
+            post("/snippetManager/share/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .param("shareEmail", "test@test.com"),
         )
             .andExpect(status().isBadRequest)
     }

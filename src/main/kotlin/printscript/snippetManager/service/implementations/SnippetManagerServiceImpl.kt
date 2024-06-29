@@ -148,10 +148,17 @@ class SnippetManagerServiceImpl(
         shareEmail: String,
     ) {
         val snippet = snippetRepository.findById(id)
-        if (snippet.isEmpty) throw Error("Snippet no encontrado")
+        if (snippet.isEmpty) throw Exception("Snippet no encontrado")
 
-        if (snippet.get().author != userData.claims["email"].toString()) throw Error("No tienes permisos para compartir este snippet")
-        if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, shareEmail)) throw Error("Ya compartiste este snippet con este usuario")
+        if (snippet.get().author != userData.claims["email"].toString()) throw Exception("No tienes permisos para compartir este snippet")
+        if (sharedSnippetRepository.findBySnippetIdAndUserEmail(
+                id,
+                shareEmail,
+            )
+        ) {
+            throw Exception("Ya compartiste este snippet con este usuario")
+        }
+        if (snippet.get().author == shareEmail) throw Exception("No puedes compartir un snippet contigo mismo")
 
         sharedSnippetRepository.save(
             SharedSnippet(
