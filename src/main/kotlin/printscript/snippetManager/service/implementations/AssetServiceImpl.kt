@@ -33,7 +33,17 @@ class AssetServiceImpl(
     }
 
     override fun getSnippetFromBucket(snippetId: Long): String {
-        TODO("Not yet implemented")
+        val snippetUrl = "$bucketUrl/$snippetId"
+
+        return webClient.get()
+            .uri(snippetUrl)
+            .retrieve()
+            .onStatus({ it.is4xxClientError || it.is5xxServerError }, {
+                it.bodyToMono(String::class.java)
+                    .map { errorBody -> Exception("Error al obtener el snippet: $errorBody") }
+            })
+            .bodyToMono(String::class.java)
+            .block() ?: throw Exception("Error al obtener el snippet")
     }
 
     override fun deleteSnippetFromBucket(snippetId: Long): Mono<Void> {

@@ -27,4 +27,9 @@ interface SnippetManagerService {
         size: Int,
         userData: Jwt,
     ): Page<SnippetViewDTO>
+
+    fun getSnippetById(
+        id: Long,
+        userData: Jwt,
+    ): SnippetOutputDTO
 }

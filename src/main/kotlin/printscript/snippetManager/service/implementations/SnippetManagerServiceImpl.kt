@@ -14,6 +14,7 @@ import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.entity.Snippet
 import printscript.snippetManager.entity.SnippetStatus
 import printscript.snippetManager.repository.FilterRepository
+import printscript.snippetManager.repository.SharedSnippetRepository
 import printscript.snippetManager.repository.SnippetRepository
 import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
@@ -26,6 +27,7 @@ class SnippetManagerServiceImpl(
     val snippetStatusRepository: SnippetStatusRepository,
     val assetService: AssetService,
     val filterRepository: FilterRepository,
+    val sharedSnippetRepository: SharedSnippetRepository,
 ) :
     SnippetManagerService {
     override fun createSnippet(
@@ -110,5 +112,31 @@ class SnippetManagerServiceImpl(
     ): Page<SnippetViewDTO> {
         val pageAndSizeRequest: Pageable = PageRequest.of(page, size, Sort.by("id").descending())
         return filterRepository.filterSnippets(filter, pageAndSizeRequest, userData.claims["email"].toString())
+    }
+
+    override fun getSnippetById(
+        id: Long,
+        userData: Jwt,
+    ): SnippetOutputDTO {
+        val snippet = snippetRepository.findById(id)
+        if (snippet.isEmpty) throw Exception("Snippet no encontrado")
+
+        val email = userData.claims["email"].toString()
+
+        if (snippet.get().author != email || sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
+            throw Exception(
+                "No tienes permisos para ver este snippet",
+            )
+        }
+
+        val code = assetService.getSnippetFromBucket(id)
+
+        return SnippetOutputDTO(
+            id = snippet.get().id,
+            name = snippet.get().name,
+            language = snippet.get().language,
+            code = code,
+            author = snippet.get().author,
+        )
     }
 }
