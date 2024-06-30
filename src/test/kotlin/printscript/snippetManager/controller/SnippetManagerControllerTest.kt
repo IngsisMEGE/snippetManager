@@ -259,7 +259,7 @@ class SnippetManagerControllerTest {
             post("/snippetManager/share/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer $testJwt")
-                .param("shareEmail", "test2@test2.com"),
+                .param("shareEmail", "test3@test3.com"),
         )
             .andExpect(status().isOk)
     }
