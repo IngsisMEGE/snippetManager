@@ -74,4 +74,18 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
             ResponseEntity.badRequest().body(e.message)
         }
     }
+
+    @PostMapping("/share/{id}")
+    fun shareSnippet(
+        @PathVariable id: Long,
+        @AuthenticationPrincipal userData: Jwt,
+        @RequestParam shareEmail: String,
+    ): ResponseEntity<String> {
+        return try {
+            snippetManagerService.shareSnippet(id, userData, shareEmail)
+            ResponseEntity.ok().build()
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
 }

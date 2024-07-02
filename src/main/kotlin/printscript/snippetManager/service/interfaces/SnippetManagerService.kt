@@ -32,4 +32,10 @@ interface SnippetManagerService {
         id: Long,
         userData: Jwt,
     ): SnippetOutputDTO
+
+    fun shareSnippet(
+        id: Long,
+        userData: Jwt,
+        shareEmail: String,
+    )
 }
