@@ -7,6 +7,9 @@ COPY build.gradle settings.gradle gradle/ ./
 COPY src ./src
 
 COPY .editorconfig ./
+ARG NEW_RELIC_LICENSE_KEY
+
+ENV NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
 
 COPY fakeEnv .env
 
@@ -17,4 +20,6 @@ RUN gradle build
 
 EXPOSE ${PORT}
 
-ENTRYPOINT ["java","-jar","/home/gradle/src/build/libs/snippetManager-0.0.1-SNAPSHOT.jar"]
+COPY newrelic/newrelic.jar /app/newrelic.jar
+
+ENTRYPOINT ["java","-jar","-javaagent:/app/newrelic.jar", "-Dnewrelic.config.license_key=${NEW_RELIC_LICENSE_KEY}","/home/gradle/src/build/libs/snippetManager-0.0.1-SNAPSHOT.jar"]
