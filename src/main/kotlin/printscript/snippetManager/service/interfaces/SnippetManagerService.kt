@@ -7,6 +7,7 @@ import printscript.snippetManager.controller.payload.request.SnippetEditDTO
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
+import printscript.snippetManager.enums.SnippetStatusEnum
 import reactor.core.publisher.Mono
 
 interface SnippetManagerService {
@@ -37,5 +38,11 @@ interface SnippetManagerService {
         id: Long,
         userData: Jwt,
         shareEmail: String,
+    )
+
+    fun updateSnippetStatus(
+        id: Long,
+        status: SnippetStatusEnum,
+        authorEmail: String,
     )
 }

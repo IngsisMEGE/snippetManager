@@ -175,4 +175,16 @@ class SnippetManagerServiceImpl(
             ),
         )
     }
+
+    override fun updateSnippetStatus(
+        id: Long,
+        status: SnippetStatusEnum,
+        authorEmail: String,
+    ) {
+        val snippetStatus = snippetStatusRepository.findBySnippetIdAndUserEmail(id, authorEmail)
+        if (snippetStatus.isEmpty) throw Exception("No existe el snippet")
+
+        snippetStatus.get().status = status
+        snippetStatusRepository.save(snippetStatus.get())
+    }
 }
