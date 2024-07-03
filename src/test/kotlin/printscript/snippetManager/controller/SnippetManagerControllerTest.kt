@@ -335,4 +335,24 @@ class SnippetManagerControllerTest {
         )
             .andExpect(status().isBadRequest)
     }
+
+    @Test
+    fun test014_searchSnippetsShouldReturnOk() {
+        mockMvc.perform(
+            post("/snippetManager/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "language": "PrintScript",
+                        "permission": ""
+                    }
+                    """.trimIndent(),
+                )
+                .param("page", "0")
+                .param("size", "10"),
+        )
+            .andExpect(status().isOk)
+    }
 }
