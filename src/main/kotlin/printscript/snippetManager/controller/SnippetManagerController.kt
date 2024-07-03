@@ -27,8 +27,7 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         @AuthenticationPrincipal userData: Jwt,
     ): Mono<ResponseEntity<SnippetOutputDTO>> {
         return try {
-            snippetManagerService.createSnippet(snippet, userData)
-                .map { ResponseEntity.ok(it) }
+            snippetManagerService.createSnippet(snippet, userData).map { ResponseEntity.ok(it) }
         } catch (e: Exception) {
             Mono.just(ResponseEntity.badRequest().build())
         }
@@ -41,10 +40,8 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         @AuthenticationPrincipal userData: Jwt,
     ): Mono<ResponseEntity<SnippetOutputDTO>> {
         return try {
-            snippetManagerService.editSnippet(id, snippet, userData)
-                .map { ResponseEntity.ok(it) }
+            snippetManagerService.editSnippet(id, snippet, userData).map { ResponseEntity.ok(it) }
         } catch (e: Exception) {
-            println(e.message)
             Mono.just(ResponseEntity.badRequest().build())
         }
     }
@@ -56,11 +53,7 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         @RequestParam(defaultValue = "10") size: Int,
         @AuthenticationPrincipal userData: Jwt,
     ): ResponseEntity<*> {
-        return try {
-            ResponseEntity.ok(snippetManagerService.searchSnippetsByFilter(filter, page, size, userData))
-        } catch (e: Exception) {
-            ResponseEntity.badRequest().body(e.message)
-        }
+        return ResponseEntity.ok(snippetManagerService.searchSnippetsByFilter(filter, page, size, userData))
     }
 
     @GetMapping("/get/{id}")
