@@ -56,14 +56,13 @@ class SnippetManagerControllerTest {
     fun logIn() {
         val jwt =
             Jwt.withTokenValue(testJwt)
-                .header("alg", "RS256") // Add the algorithm header (you may adjust this based on your JWT)
-                .claim("email", "test@test.com") // Extract other claims as needed
+                .header("alg", "RS256")
+                .claim("email", "test@test.com")
                 .build()
         `when`(jwtDecoder.decode(testJwt)).thenReturn(jwt)
 
         val authorities = listOf(SimpleGrantedAuthority("SCOPE_write:snippets"))
 
-        // Create a mock Authentication with the JWT
         val authentication =
             TestingAuthenticationToken(
                 jwt,
