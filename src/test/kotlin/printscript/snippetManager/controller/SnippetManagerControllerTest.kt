@@ -87,7 +87,8 @@ class SnippetManagerControllerTest {
                     {
                         "name": "snippet",
                         "language": "PrintScript",
-                        "code": "let a: number = 5;"
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
                     }
                     """.trimIndent(),
                 ),
@@ -124,7 +125,8 @@ class SnippetManagerControllerTest {
                     {
                         "name": "",
                         "language": "PrintScript",
-                        "code": "let a: number = 5;"
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
                     }
                     """.trimIndent(),
                 ),
@@ -143,7 +145,8 @@ class SnippetManagerControllerTest {
                     {
                         "name": "snippet",
                         "language": "PrintScript",
-                        "code": "let a: number = 5;"
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
                     }
                     """.trimIndent(),
                 ),
@@ -209,7 +212,8 @@ class SnippetManagerControllerTest {
                     {
                         "name": "snippet",
                         "language": "PrintScript",
-                        "code": "let a: number = 5;"
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
                     }
                     """.trimIndent(),
                 ),
@@ -247,7 +251,8 @@ class SnippetManagerControllerTest {
                     {
                         "name": "snippet",
                         "language": "PrintScript",
-                        "code": "let a: number = 5;"
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
                     }
                     """.trimIndent(),
                 ),
@@ -285,7 +290,8 @@ class SnippetManagerControllerTest {
                     {
                         "name": "snippet",
                         "language": "PrintScript",
-                        "code": "let a: number = 5;"
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
                     }
                     """.trimIndent(),
                 ),
@@ -320,7 +326,8 @@ class SnippetManagerControllerTest {
                     {
                         "name": "snippet",
                         "language": "PrintScript",
-                        "code": "let a: number = 5;"
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
                     }
                     """.trimIndent(),
                 ),

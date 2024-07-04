@@ -22,6 +22,7 @@ import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
+import java.util.Locale
 
 @Service
 class SnippetManagerServiceImpl(
@@ -63,6 +64,8 @@ class SnippetManagerServiceImpl(
                         language = savedSnippet.language,
                         code = snippet.code,
                         author = savedSnippet.author,
+                        status = snippetStatusEnum.status.toString(),
+                        extension = snippet.extension,
                     ),
                 ),
             ).onErrorResume { error ->
@@ -90,6 +93,8 @@ class SnippetManagerServiceImpl(
 
         assetService.deleteSnippetFromBucket(id).block()
 
+        val extension = languageToExtension(snippet.get().language)
+
         return assetService.saveSnippetInBucket(id, editedCode.code)
             .then(
                 Mono.just(
@@ -99,6 +104,8 @@ class SnippetManagerServiceImpl(
                         language = snippet.get().language,
                         code = editedCode.code,
                         author = snippet.get().author,
+                        status = snippetStatus.get().status.toString(),
+                        extension = extension,
                     ),
                 ),
             ).onErrorResume { error ->
@@ -132,6 +139,9 @@ class SnippetManagerServiceImpl(
         }
 
         val code = assetService.getSnippetFromBucket(id)
+        val status = snippetStatusRepository.findBySnippetIdAndUserEmail(id, snippet.get().author)
+        if (status.isEmpty) throw Exception("No se encontro el estado del snippet")
+        val extension = languageToExtension(snippet.get().language)
 
         return SnippetOutputDTO(
             id = snippet.get().id,
@@ -139,6 +149,8 @@ class SnippetManagerServiceImpl(
             language = snippet.get().language,
             code = code,
             author = snippet.get().author,
+            status = status.get().status.toString(),
+            extension = extension,
         )
     }
 
@@ -186,5 +198,15 @@ class SnippetManagerServiceImpl(
 
         snippetStatus.get().status = status
         snippetStatusRepository.save(snippetStatus.get())
+    }
+
+    private fun languageToExtension(language: String): String {
+        return when (language.lowercase(Locale.getDefault())) {
+            "java" -> "java"
+            "python" -> "py"
+            "golang" -> "go"
+            "printscript" -> "prs"
+            else -> "txt"
+        }
     }
 }
