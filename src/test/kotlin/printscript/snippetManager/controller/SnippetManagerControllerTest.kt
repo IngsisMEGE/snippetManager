@@ -365,11 +365,12 @@ class SnippetManagerControllerTest {
     @Test
     fun test015_putSnippetInPendingShouldReturnOk() {
         // Arrange: Insert initial test data
-        val snippet = Snippet(
-            name = "Test Snippet",
-            language = "Kotlin",
-            author = "Author Name"
-        )
+        val snippet =
+            Snippet(
+                name = "Test Snippet",
+                language = "Kotlin",
+                author = "Author Name",
+            )
         snippetRepository.save(snippet)
 
         val snippetStatus1 = SnippetStatus("test@test.com", snippet, SnippetStatusEnum.COMPLIANT)
@@ -379,7 +380,7 @@ class SnippetManagerControllerTest {
         mockMvc.perform(
             put("/snippetManager/pending/user/")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer $testJwt")
+                .header("Authorization", "Bearer $testJwt"),
         )
             .andExpect(status().isOk)
 
