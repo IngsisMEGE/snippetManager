@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -77,6 +78,18 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         return try {
             snippetManagerService.shareSnippet(id, userData, shareEmail)
             ResponseEntity.ok().build()
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @PutMapping("/pending/user/")
+    fun putSnippetInPending(
+        @AuthenticationPrincipal userData: Jwt,
+    ): ResponseEntity<Any> {
+        return try {
+            snippetManagerService.updateAllStatus(userData.claims["email"].toString())
+            ResponseEntity.ok("Status Updated Correctly")
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)
         }

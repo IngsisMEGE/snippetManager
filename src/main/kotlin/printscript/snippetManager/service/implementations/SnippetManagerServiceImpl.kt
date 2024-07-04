@@ -200,6 +200,10 @@ class SnippetManagerServiceImpl(
         snippetStatusRepository.save(snippetStatus.get())
     }
 
+    override fun updateAllStatus(authorEmail: String) {
+        snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
+    }
+
     private fun languageToExtension(language: String): String {
         return when (language.lowercase(Locale.getDefault())) {
             "java" -> "java"

@@ -45,4 +45,6 @@ interface SnippetManagerService {
         status: SnippetStatusEnum,
         authorEmail: String,
     )
+
+    fun updateAllStatus(authorEmail: String)
 }
