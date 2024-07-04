@@ -187,4 +187,8 @@ class SnippetManagerServiceImpl(
         snippetStatus.get().status = status
         snippetStatusRepository.save(snippetStatus.get())
     }
+
+    override fun updateAllStatus(authorEmail: String) {
+        snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
+    }
 }

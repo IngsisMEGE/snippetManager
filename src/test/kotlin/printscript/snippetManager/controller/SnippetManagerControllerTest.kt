@@ -1,6 +1,8 @@
 package printscript.snippetManager.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
@@ -20,7 +22,11 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import printscript.snippetManager.entity.Snippet
+import printscript.snippetManager.entity.SnippetStatus
+import printscript.snippetManager.enums.SnippetStatusEnum
 import printscript.snippetManager.repository.SnippetRepository
 import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
@@ -354,5 +360,34 @@ class SnippetManagerControllerTest {
                 .param("size", "10"),
         )
             .andExpect(status().isOk)
+    }
+
+    @Test
+    fun test015_putSnippetInPendingShouldReturnOk() {
+        // Arrange: Insert initial test data
+        val snippet = Snippet(
+            name = "Test Snippet",
+            language = "Kotlin",
+            author = "Author Name"
+        )
+        snippetRepository.save(snippet)
+
+        val snippetStatus1 = SnippetStatus("test@test.com", snippet, SnippetStatusEnum.COMPLIANT)
+        snippetStatusRepository.save(snippetStatus1)
+
+        // Act: Perform the PUT request
+        mockMvc.perform(
+            put("/snippetManager/pending/user/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+        )
+            .andExpect(status().isOk)
+
+        // Assert: Verify that the statuses were updated
+        val updatedStatuses = snippetStatusRepository.findBySnippetIdAndUserEmail(snippet.id, "test@test.com")
+        assertTrue(updatedStatuses.isPresent, "Expected snippet status to be present")
+        updatedStatuses.ifPresent {
+            assertEquals(SnippetStatusEnum.PENDING, it.status)
+        }
     }
 }
