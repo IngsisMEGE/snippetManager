@@ -85,6 +85,7 @@ class FilterRepository(private val em: EntityManager) {
                     .`when`(SnippetStatusEnum.PENDING, "PENDING")
                     .`when`(SnippetStatusEnum.COMPLIANT, "COMPLIANT")
                     .`when`(SnippetStatusEnum.NOT_COMPLIANT, "NOT_COMPLIANT")
+                    .`when`(SnippetStatusEnum.FAILED, "FAILED")
                     .otherwise("UNKNOWN"),
             ),
         ).where(*predicates.toTypedArray())

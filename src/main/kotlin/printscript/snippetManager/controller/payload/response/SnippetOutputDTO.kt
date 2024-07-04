@@ -6,4 +6,6 @@ data class SnippetOutputDTO(
     val language: String,
     val code: String,
     val author: String,
+    val status: String,
+    val extension: String,
 )
