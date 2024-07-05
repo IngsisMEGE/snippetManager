@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import printscript.snippetManager.controller.payload.request.FilterDTO
 import printscript.snippetManager.controller.payload.request.SnippetEditDTO
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
+import printscript.snippetManager.controller.payload.request.UpdateAction
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.entity.SharedSnippet
@@ -20,6 +21,7 @@ import printscript.snippetManager.repository.SharedSnippetRepository
 import printscript.snippetManager.repository.SnippetRepository
 import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
+import printscript.snippetManager.service.interfaces.PrintScriptService
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
 
@@ -30,6 +32,7 @@ class SnippetManagerServiceImpl(
     val assetService: AssetService,
     val filterRepository: FilterRepository,
     val sharedSnippetRepository: SharedSnippetRepository,
+    val printScriptService: PrintScriptService
 ) :
     SnippetManagerService {
     override fun createSnippet(
@@ -188,7 +191,11 @@ class SnippetManagerServiceImpl(
         snippetStatusRepository.save(snippetStatus.get())
     }
 
-    override fun updateAllStatus(authorEmail: String) {
+    override fun updateAllStatus(authorEmail: String, action : UpdateAction) {
         snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
+
+        if (action.sca) {
+            printScriptService.analyzeAllSnippets()
+        }
     }
 }

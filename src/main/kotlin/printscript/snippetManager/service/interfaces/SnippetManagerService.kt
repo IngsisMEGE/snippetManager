@@ -5,6 +5,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import printscript.snippetManager.controller.payload.request.FilterDTO
 import printscript.snippetManager.controller.payload.request.SnippetEditDTO
 import printscript.snippetManager.controller.payload.request.SnippetInputDTO
+import printscript.snippetManager.controller.payload.request.UpdateAction
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.enums.SnippetStatusEnum
@@ -46,5 +47,9 @@ interface SnippetManagerService {
         authorEmail: String,
     )
 
-    fun updateAllStatus(authorEmail: String)
+    fun updateAllStatus(authorEmail: String, action : UpdateAction)
+
+    fun updateSnippetSCA()
+
+    fun updateSnippetFormat()
 }
