@@ -85,10 +85,10 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     @PutMapping("/pending/user/sca")
     fun updateSnippetFromUpdateRulesSCA(
         @AuthenticationPrincipal userData: Jwt,
-        @RequestBody action : UpdateAction
+        @RequestBody rules : SCARulesDTO
     ): ResponseEntity<Any> {
         return try {
-            snippetManagerService.updateAllStatus(userData.claims["email"].toString(), action)
+            snippetManagerService.updateSnippetSCA(rules , userData)
             ResponseEntity.ok("Status Updated Correctly")
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)
@@ -97,8 +97,14 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
 
     @PutMapping("/pending/user/format")
     fun updateSnippetFromUpdateRulesFormatter(
-        @AuthenticationPrincipal userData: Jwt
+        @AuthenticationPrincipal userData: Jwt,
+        @RequestBody rules : FormatRulesDTO
     ) : ResponseEntity<Any> {
-
+        return try{
+            snippetManagerService.updateSnippetFormat(rules , userData)
+            ResponseEntity.ok("Status Updated Correctly")
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
+        }
     }
 }

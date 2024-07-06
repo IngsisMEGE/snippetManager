@@ -6,10 +6,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
-import printscript.snippetManager.controller.payload.request.FilterDTO
-import printscript.snippetManager.controller.payload.request.SnippetEditDTO
-import printscript.snippetManager.controller.payload.request.SnippetInputDTO
-import printscript.snippetManager.controller.payload.request.UpdateAction
+import printscript.snippetManager.controller.payload.request.*
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.entity.SharedSnippet
@@ -191,11 +188,15 @@ class SnippetManagerServiceImpl(
         snippetStatusRepository.save(snippetStatus.get())
     }
 
-    override fun updateAllStatus(authorEmail: String, action : UpdateAction) {
+    override fun updateSnippetSCA(rules: SCARulesDTO, userData: Jwt) {
+        val authorEmail = userData.claims["email"].toString()
         snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
+        printScriptService.analyzeAllSnippets(rules, userData)
+    }
 
-        if (action.sca) {
-            printScriptService.analyzeAllSnippets()
-        }
+    override fun updateSnippetFormat(rules: FormatRulesDTO, userData: Jwt) {
+        val authorEmail = userData.claims["email"].toString()
+        snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
+        printScriptService.formatAllSnippets(rules, userData)
     }
 }
