@@ -44,7 +44,13 @@ interface SnippetManagerService {
         authorEmail: String,
     )
 
-    fun updateSnippetSCA(rules : SCARulesDTO, userData: Jwt)
+    fun updateSnippetSCA(
+        rules: SCARulesDTO,
+        userData: Jwt,
+    )
 
-    fun updateSnippetFormat(rules : FormatRulesDTO, userData: Jwt)
+    fun updateSnippetFormat(
+        rules: FormatRulesDTO,
+        userData: Jwt,
+    )
 }

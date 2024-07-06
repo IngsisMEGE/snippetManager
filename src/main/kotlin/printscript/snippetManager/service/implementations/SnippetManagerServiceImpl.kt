@@ -29,7 +29,7 @@ class SnippetManagerServiceImpl(
     val assetService: AssetService,
     val filterRepository: FilterRepository,
     val sharedSnippetRepository: SharedSnippetRepository,
-    val printScriptService: PrintScriptService
+    val printScriptService: PrintScriptService,
 ) :
     SnippetManagerService {
     override fun createSnippet(
@@ -188,13 +188,19 @@ class SnippetManagerServiceImpl(
         snippetStatusRepository.save(snippetStatus.get())
     }
 
-    override fun updateSnippetSCA(rules: SCARulesDTO, userData: Jwt) {
+    override fun updateSnippetSCA(
+        rules: SCARulesDTO,
+        userData: Jwt,
+    ) {
         val authorEmail = userData.claims["email"].toString()
         snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
         printScriptService.analyzeAllSnippets(rules, userData)
     }
 
-    override fun updateSnippetFormat(rules: FormatRulesDTO, userData: Jwt) {
+    override fun updateSnippetFormat(
+        rules: FormatRulesDTO,
+        userData: Jwt,
+    ) {
         val authorEmail = userData.claims["email"].toString()
         snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
         printScriptService.formatAllSnippets(rules, userData)

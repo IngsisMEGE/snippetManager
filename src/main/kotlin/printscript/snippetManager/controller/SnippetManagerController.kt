@@ -1,7 +1,6 @@
 package printscript.snippetManager.controller
 
 import jakarta.validation.Valid
-import org.apache.coyote.Response
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -85,10 +84,10 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     @PutMapping("/pending/user/sca")
     fun updateSnippetFromUpdateRulesSCA(
         @AuthenticationPrincipal userData: Jwt,
-        @RequestBody rules : SCARulesDTO
+        @RequestBody rules: SCARulesDTO,
     ): ResponseEntity<Any> {
         return try {
-            snippetManagerService.updateSnippetSCA(rules , userData)
+            snippetManagerService.updateSnippetSCA(rules, userData)
             ResponseEntity.ok("Status Updated Correctly")
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)
@@ -98,10 +97,10 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     @PutMapping("/pending/user/format")
     fun updateSnippetFromUpdateRulesFormatter(
         @AuthenticationPrincipal userData: Jwt,
-        @RequestBody rules : FormatRulesDTO
-    ) : ResponseEntity<Any> {
-        return try{
-            snippetManagerService.updateSnippetFormat(rules , userData)
+        @RequestBody rules: FormatRulesDTO,
+    ): ResponseEntity<Any> {
+        return try {
+            snippetManagerService.updateSnippetFormat(rules, userData)
             ResponseEntity.ok("Status Updated Correctly")
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)
