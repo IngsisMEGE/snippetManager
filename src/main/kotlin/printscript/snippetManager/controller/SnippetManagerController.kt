@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import printscript.snippetManager.controller.payload.request.FilterDTO
-import printscript.snippetManager.controller.payload.request.SnippetEditDTO
-import printscript.snippetManager.controller.payload.request.SnippetInputDTO
+import printscript.snippetManager.controller.payload.request.*
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
@@ -83,12 +81,26 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         }
     }
 
-    @PutMapping("/pending/user/")
-    fun putSnippetInPending(
+    @PutMapping("/pending/user/sca")
+    fun updateSnippetFromUpdateRulesSCA(
         @AuthenticationPrincipal userData: Jwt,
+        @RequestBody rules: SCARulesDTO,
     ): ResponseEntity<Any> {
         return try {
-            snippetManagerService.updateAllStatus(userData.claims["email"].toString())
+            snippetManagerService.updateSnippetSCA(rules, userData)
+            ResponseEntity.ok("Status Updated Correctly")
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @PutMapping("/pending/user/format")
+    fun updateSnippetFromUpdateRulesFormatter(
+        @AuthenticationPrincipal userData: Jwt,
+        @RequestBody rules: FormatRulesDTO,
+    ): ResponseEntity<Any> {
+        return try {
+            snippetManagerService.updateSnippetFormat(rules, userData)
             ResponseEntity.ok("Status Updated Correctly")
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)

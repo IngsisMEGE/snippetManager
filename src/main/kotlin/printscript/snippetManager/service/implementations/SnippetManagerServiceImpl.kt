@@ -6,9 +6,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
-import printscript.snippetManager.controller.payload.request.FilterDTO
-import printscript.snippetManager.controller.payload.request.SnippetEditDTO
-import printscript.snippetManager.controller.payload.request.SnippetInputDTO
+import printscript.snippetManager.controller.payload.request.*
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.entity.SharedSnippet
@@ -20,6 +18,7 @@ import printscript.snippetManager.repository.SharedSnippetRepository
 import printscript.snippetManager.repository.SnippetRepository
 import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
+import printscript.snippetManager.service.interfaces.PrintScriptService
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
 import java.util.Locale
@@ -31,6 +30,7 @@ class SnippetManagerServiceImpl(
     val assetService: AssetService,
     val filterRepository: FilterRepository,
     val sharedSnippetRepository: SharedSnippetRepository,
+    val printScriptService: PrintScriptService,
 ) :
     SnippetManagerService {
     override fun createSnippet(
@@ -200,8 +200,22 @@ class SnippetManagerServiceImpl(
         snippetStatusRepository.save(snippetStatus.get())
     }
 
-    override fun updateAllStatus(authorEmail: String) {
+    override fun updateSnippetSCA(
+        rules: SCARulesDTO,
+        userData: Jwt,
+    ) {
+        val authorEmail = userData.claims["email"].toString()
         snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
+        printScriptService.analyzeAllSnippets(rules, userData)
+    }
+
+    override fun updateSnippetFormat(
+        rules: FormatRulesDTO,
+        userData: Jwt,
+    ) {
+        val authorEmail = userData.claims["email"].toString()
+        snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
+        printScriptService.formatAllSnippets(rules, userData)
     }
 
     private fun languageToExtension(language: String): String {
