@@ -218,6 +218,30 @@ class SnippetManagerServiceImpl(
         printScriptService.formatAllSnippets(rules, userData)
     }
 
+    override fun deleteSnippet(
+        id: Long,
+        userData: Jwt,
+    ) {
+        val snippet = snippetRepository.findById(id)
+        val email = userData.claims["email"].toString()
+        if (snippet.get().author != email)
+            {
+                if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
+                    sharedSnippetRepository.deleteBySnippetIdAndUserEmail(id, email)
+                    snippetStatusRepository.deleteBySnippetIdAndUserEmail(id, email)
+                    return
+                } else {
+                    throw Exception("No tienes permisos para borrar este snippet")
+                }
+            }
+        assetService.deleteSnippetFromBucket(id).block()
+        snippetRepository.deleteById(id)
+    }
+
+    override fun getFileTypes(): List<String> {
+        return languages
+    }
+
     private fun languageToExtension(language: String): String {
         return when (language.lowercase(Locale.getDefault())) {
             "java" -> "java"
@@ -227,4 +251,6 @@ class SnippetManagerServiceImpl(
             else -> "txt"
         }
     }
+
+    private val languages = listOf("java", "python", "golang", "printscript")
 }

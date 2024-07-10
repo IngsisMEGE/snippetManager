@@ -53,4 +53,11 @@ interface SnippetManagerService {
         rules: FormatRulesDTO,
         userData: Jwt,
     )
+
+    fun deleteSnippet(
+        id: Long,
+        userData: Jwt,
+    )
+
+    fun getFileTypes(): List<String>
 }

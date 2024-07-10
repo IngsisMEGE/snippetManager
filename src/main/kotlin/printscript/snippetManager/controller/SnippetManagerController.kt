@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -105,5 +106,23 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)
         }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    fun deleteSnippet(
+        @PathVariable id: Long,
+        @AuthenticationPrincipal userData: Jwt,
+    ): ResponseEntity<String> {
+        return try {
+            snippetManagerService.deleteSnippet(id, userData)
+            ResponseEntity.ok().build()
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
+
+    @GetMapping("/fileTypes")
+    fun getFileTypes(): ResponseEntity<List<String>> {
+        return ResponseEntity.ok(snippetManagerService.getFileTypes())
     }
 }
