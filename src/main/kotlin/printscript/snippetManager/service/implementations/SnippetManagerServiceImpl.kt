@@ -224,16 +224,15 @@ class SnippetManagerServiceImpl(
     ) {
         val snippet = snippetRepository.findById(id)
         val email = userData.claims["email"].toString()
-        if (snippet.get().author != email)
-            {
-                if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
-                    sharedSnippetRepository.deleteBySnippetIdAndUserEmail(id, email)
-                    snippetStatusRepository.deleteBySnippetIdAndUserEmail(id, email)
-                    return
-                } else {
-                    throw Exception("No tienes permisos para borrar este snippet")
-                }
+        if (snippet.get().author != email) {
+            if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
+                sharedSnippetRepository.deleteBySnippetIdAndUserEmail(id, email)
+                snippetStatusRepository.deleteBySnippetIdAndUserEmail(id, email)
+                return
+            } else {
+                throw Exception("No tienes permisos para borrar este snippet")
             }
+        }
         assetService.deleteSnippetFromBucket(id).block()
         snippetRepository.deleteById(id)
     }
