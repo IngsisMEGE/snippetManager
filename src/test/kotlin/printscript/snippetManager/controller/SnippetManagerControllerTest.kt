@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -25,6 +26,7 @@ import printscript.snippetManager.repository.SnippetRepository
 import printscript.snippetManager.repository.SnippetStatusRepository
 import printscript.snippetManager.service.interfaces.AssetService
 import printscript.snippetManager.service.interfaces.SnippetManagerService
+import reactor.core.publisher.Mono
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -359,6 +361,54 @@ class SnippetManagerControllerTest {
                 )
                 .param("page", "0")
                 .param("size", "10"),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun test015_deleteSnippetShouldReturnOk() {
+        mockMvc.perform(
+            post("/snippetManager/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "name": "snippet",
+                        "language": "PrintScript",
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+        logIn()
+
+        whenever(assetService.deleteSnippetFromBucket(1)).thenReturn(Mono.empty())
+        mockMvc.perform(
+            delete("/snippetManager/delete/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt"),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun test016_deleteSnippetWithInvalidIdShouldReturnBadRequest() {
+        mockMvc.perform(
+            delete("/snippetManager/delete/99")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt"),
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun test017_getFileTypesShouldReturnOk() {
+        mockMvc.perform(
+            get("/snippetManager/fileTypes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt"),
         )
             .andExpect(status().isOk)
     }
