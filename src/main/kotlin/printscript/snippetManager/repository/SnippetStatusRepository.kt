@@ -24,4 +24,12 @@ interface SnippetStatusRepository : JpaRepository<SnippetStatus, Long> {
         userEmail: String,
         status: SnippetStatusEnum,
     ): Int
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM SnippetStatus s WHERE s.snippet.id = :snippetId AND s.userEmail = :email")
+    fun deleteBySnippetIdAndUserEmail(
+        snippetId: Long,
+        email: String,
+    ): Int
 }
