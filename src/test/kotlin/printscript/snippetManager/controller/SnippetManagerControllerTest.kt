@@ -383,10 +383,26 @@ class SnippetManagerControllerTest {
                 ),
         )
         logIn()
-
-        whenever(assetService.deleteSnippetFromBucket(1)).thenReturn(Mono.empty())
         mockMvc.perform(
-            delete("/snippetManager/delete/1")
+            post("/snippetManager/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $testJwt")
+                .content(
+                    """
+                    {
+                        "name": "snippet",
+                        "language": "PrintScript",
+                        "code": "let a: number = 5;",
+                        "extension": "prs"
+                    }
+                    """.trimIndent(),
+                ),
+        )
+        logIn()
+
+        whenever(assetService.deleteSnippetFromBucket(2)).thenReturn(Mono.empty())
+        mockMvc.perform(
+            delete("/snippetManager/delete/2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer $testJwt"),
         )
