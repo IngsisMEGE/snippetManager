@@ -60,3 +60,15 @@ jobs:
           tags: |
             ghcr.io/ingsismege/snippetmanager:latest.SNAPSHOT
             ghcr.io/ingsismege/snippetmanager:${{ env.VERSION }}.SNAPSHOT
+
+      - name: Update dev server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_DEV }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.KEY_DEV }}
+          script: |
+            cd INFRAingsis/dev/
+            docker compose -f docker-compose.dev.yml stop snippetManagerApi
+            docker compose -f docker-compose.dev.yml pull snippetManagerApi
+            docker compose -f docker-compose.dev.yml up snippetManagerApi -d --build
