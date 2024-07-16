@@ -46,7 +46,7 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         }
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     fun searchSnippets(
         @RequestBody filter: FilterDTO,
         @RequestParam page: Int,
