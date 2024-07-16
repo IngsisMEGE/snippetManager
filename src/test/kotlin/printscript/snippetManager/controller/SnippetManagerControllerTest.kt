@@ -348,7 +348,7 @@ class SnippetManagerControllerTest {
     @Test
     fun test014_searchSnippetsShouldReturnOk() {
         mockMvc.perform(
-            get("/snippetManager/search")
+            post("/snippetManager/search")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer $testJwt")
                 .content(
