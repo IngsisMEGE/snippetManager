@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import printscript.snippetManager.controller.payload.request.*
+import printscript.snippetManager.controller.payload.response.FileTypeDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.entity.SharedSnippet
@@ -237,8 +238,8 @@ class SnippetManagerServiceImpl(
         snippetRepository.deleteById(id)
     }
 
-    override fun getFileTypes(): List<String> {
-        return languages
+    override fun getFileTypes(): List<FileTypeDTO> {
+        return languages.map { FileTypeDTO(it, languageToExtension(it)) }
     }
 
     private fun languageToExtension(language: String): String {

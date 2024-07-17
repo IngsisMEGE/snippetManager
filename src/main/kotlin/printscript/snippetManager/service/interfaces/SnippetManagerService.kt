@@ -3,6 +3,7 @@ package printscript.snippetManager.service.interfaces
 import org.springframework.data.domain.Page
 import org.springframework.security.oauth2.jwt.Jwt
 import printscript.snippetManager.controller.payload.request.*
+import printscript.snippetManager.controller.payload.response.FileTypeDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.controller.payload.response.SnippetViewDTO
 import printscript.snippetManager.enums.SnippetStatusEnum
@@ -59,5 +60,5 @@ interface SnippetManagerService {
         userData: Jwt,
     )
 
-    fun getFileTypes(): List<String>
+    fun getFileTypes(): List<FileTypeDTO>
 }
