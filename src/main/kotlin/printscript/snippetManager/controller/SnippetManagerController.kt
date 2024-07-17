@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import printscript.snippetManager.controller.payload.request.*
+import printscript.snippetManager.controller.payload.response.FileTypeDTO
 import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
@@ -122,7 +123,7 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     }
 
     @GetMapping("/fileTypes")
-    fun getFileTypes(): ResponseEntity<List<String>> {
+    fun getFileTypes(): ResponseEntity<List<FileTypeDTO>> {
         return ResponseEntity.ok(snippetManagerService.getFileTypes())
     }
 }
