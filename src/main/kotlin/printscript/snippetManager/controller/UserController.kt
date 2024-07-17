@@ -18,7 +18,8 @@ class UserController(val userService: UserService) {
         @AuthenticationPrincipal userData: Jwt,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "") name: String,
     ): Page<UserDTO> {
-        return userService.getUsers(userData, page, size)
+        return userService.getUsers(userData, page, size, name)
     }
 }
