@@ -179,14 +179,6 @@ class SnippetManagerServiceImpl(
                 snippet = snippet.get(),
             ),
         )
-
-        snippetStatusRepository.save(
-            SnippetStatus(
-                userEmail = shareEmail,
-                snippet = snippet.get(),
-                status = SnippetStatusEnum.PENDING,
-            ),
-        )
     }
 
     override fun updateSnippetStatus(
