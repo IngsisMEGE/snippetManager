@@ -133,7 +133,7 @@ class SnippetManagerServiceImpl(
 
         val email = userData.claims["email"].toString()
 
-        if (snippet.get().author != email || sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
+        if (snippet.get().author != email && !sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
             throw Exception(
                 "No tienes permisos para ver este snippet",
             )
