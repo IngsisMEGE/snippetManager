@@ -8,5 +8,6 @@ interface UserService {
         userData: Jwt,
         page: Int,
         pageSize: Int,
+        name: String,
     ): Page<UserDTO>
 }

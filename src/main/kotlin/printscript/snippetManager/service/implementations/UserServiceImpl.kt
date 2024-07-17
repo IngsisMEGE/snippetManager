@@ -23,12 +23,13 @@ class UserServiceImpl(
         userData: Jwt,
         page: Int,
         pageSize: Int,
+        name: String,
     ): Page<UserDTO> {
         val pageable = PageRequest.of(page, pageSize)
 
         val users =
             webClient.get()
-                .uri("$auth0Url/users?fields=email,nickname&page=$page&per_page=$pageSize")
+                .uri("$auth0Url/users?fields=email,nickname&page=$page&per_page=$pageSize&q=nickname:$name*")
                 .header("Authorization", "Bearer ${dotenv["AUTH0_MANAGEMENT_API_TOKEN"]}")
                 .retrieve()
                 .bodyToMono<List<UserDTO>>()
