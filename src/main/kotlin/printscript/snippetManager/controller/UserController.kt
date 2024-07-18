@@ -1,6 +1,7 @@
 package printscript.snippetManager.controller
 
 import org.springframework.data.domain.Page
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,7 +13,7 @@ import printscript.snippetManager.service.interfaces.UserService
 
 @RestController
 @RequestMapping("/user")
-class UserController(val userService: UserService) {
+class UserController(val userService: UserService, private val redisTemplate: RedisTemplate<String, Any>) {
     @GetMapping("/get")
     fun getUser(
         @AuthenticationPrincipal userData: Jwt,
