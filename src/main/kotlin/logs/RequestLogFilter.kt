@@ -1,4 +1,4 @@
-package log
+package logs
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

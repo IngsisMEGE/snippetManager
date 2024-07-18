@@ -1,6 +1,8 @@
 package printscript.snippetManager.service.implementations
 
-import log.CorrIdFilter.Companion.CORRELATION_ID_KEY
+import logs.CorrIdFilter.Companion.CORRELATION_ID_KEY
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -36,48 +38,58 @@ class SnippetManagerServiceImpl(
     val filterRepository: FilterRepository,
     val sharedSnippetRepository: SharedSnippetRepository,
     val printScriptService: PrintScriptService,
-) :
-    SnippetManagerService {
+) : SnippetManagerService {
+    private val logger: Logger = LoggerFactory.getLogger(SnippetManagerServiceImpl::class.java)
+
     override fun createSnippet(
         snippet: SnippetInputDTO,
         userData: Jwt,
     ): Mono<SnippetOutputDTO> {
-        val savedSnippet =
-            snippetRepository.save(
-                Snippet(
-                    name = snippet.name,
-                    language = snippet.language,
-                    author = userData.claims["email"].toString(),
-                ),
-            )
-
-        val snippetStatusEnum =
-            snippetStatusRepository.save(
-                SnippetStatus(
-                    userEmail = userData.claims["email"].toString(),
-                    snippet = savedSnippet,
-                    status = SnippetStatusEnum.PENDING,
-                ),
-            )
-
-        return assetService.saveSnippetInBucket(savedSnippet.id, snippet.code)
-            .then(
-                Mono.just(
-                    SnippetOutputDTO(
-                        id = savedSnippet.id,
-                        name = savedSnippet.name,
-                        language = savedSnippet.language,
-                        code = snippet.code,
-                        author = savedSnippet.author,
-                        status = snippetStatusEnum.status.toString(),
-                        extension = snippet.extension,
+        logger.debug("Entering createSnippet")
+        val userEmail = userData.claims["email"].toString()
+        return try {
+            val savedSnippet =
+                snippetRepository.save(
+                    Snippet(
+                        name = snippet.name,
+                        language = snippet.language,
+                        author = userEmail,
                     ),
-                ),
-            ).onErrorResume { error ->
-                snippetStatusRepository.delete(snippetStatusEnum)
-                snippetRepository.delete(savedSnippet)
-                throw Error("Error al guardar el snippet: ${error.message}")
-            }
+                )
+
+            val snippetStatusEnum =
+                snippetStatusRepository.save(
+                    SnippetStatus(
+                        userEmail = userEmail,
+                        snippet = savedSnippet,
+                        status = SnippetStatusEnum.PENDING,
+                    ),
+                )
+
+            assetService.saveSnippetInBucket(savedSnippet.id, snippet.code)
+                .then(
+                    Mono.just(
+                        SnippetOutputDTO(
+                            id = savedSnippet.id,
+                            name = savedSnippet.name,
+                            language = savedSnippet.language,
+                            code = snippet.code,
+                            author = savedSnippet.author,
+                            status = snippetStatusEnum.status.toString(),
+                            extension = snippet.extension,
+                        ),
+                    ),
+                ).doOnSuccess {
+                    logger.info("Snippet created successfully for user: $userEmail")
+                }.doOnError { error ->
+                    snippetStatusRepository.delete(snippetStatusEnum)
+                    snippetRepository.delete(savedSnippet)
+                    logger.error("Error creating snippet for user: $userEmail", error)
+                }
+        } catch (e: Exception) {
+            logger.error("Exception in createSnippet", e)
+            throw e
+        }
     }
 
     override fun editSnippet(
@@ -85,37 +97,56 @@ class SnippetManagerServiceImpl(
         editedCode: SnippetEditDTO,
         userData: Jwt,
     ): Mono<SnippetOutputDTO> {
-        val snippet = snippetRepository.findById(id)
-        if (snippet.isEmpty) throw Error("Snippet no encontrado")
+        logger.debug("Entering editSnippet with snippetId: $id")
+        val userEmail = userData.claims["email"].toString()
+        return try {
+            val snippet =
+                snippetRepository.findById(id).orElseThrow {
+                    logger.error("Snippet not found with id: $id")
+                    Exception("Snippet not found")
+                }
 
-        if (snippet.get().author != userData.claims["email"].toString()) throw Error("No tienes permisos para editar este snippet")
-
-        val snippetStatus = snippetStatusRepository.findBySnippetIdAndUserEmail(id, userData.claims["email"].toString())
-        if (snippetStatus.isEmpty) throw Error("No te han compartido este snippet")
-        snippetStatus.get().status = SnippetStatusEnum.PENDING
-
-        snippetStatusRepository.save(snippetStatus.get())
-
-        assetService.deleteSnippetFromBucket(id).block()
-
-        val extension = languageToExtension(snippet.get().language)
-
-        return assetService.saveSnippetInBucket(id, editedCode.code)
-            .then(
-                Mono.just(
-                    SnippetOutputDTO(
-                        id = snippet.get().id,
-                        name = snippet.get().name,
-                        language = snippet.get().language,
-                        code = editedCode.code,
-                        author = snippet.get().author,
-                        status = snippetStatus.get().status.toString(),
-                        extension = extension,
-                    ),
-                ),
-            ).onErrorResume { error ->
-                throw Error("Error al guardar el snippet: ${error.message}")
+            if (snippet.author != userEmail) {
+                logger.warn("Unauthorized attempt to edit snippet by user: $userEmail")
+                throw Exception("Unauthorized")
             }
+
+            val snippetStatus =
+                snippetStatusRepository.findBySnippetIdAndUserEmail(id, userEmail)
+                    .orElseThrow {
+                        logger.error("Snippet status not found for id: $id and user: $userEmail")
+                        Exception("Snippet status not found")
+                    }
+
+            snippetStatus.status = SnippetStatusEnum.PENDING
+            snippetStatusRepository.save(snippetStatus)
+
+            assetService.deleteSnippetFromBucket(id).block()
+
+            val extension = languageToExtension(snippet.language)
+
+            assetService.saveSnippetInBucket(id, editedCode.code)
+                .then(
+                    Mono.just(
+                        SnippetOutputDTO(
+                            id = snippet.id,
+                            name = snippet.name,
+                            language = snippet.language,
+                            code = editedCode.code,
+                            author = snippet.author,
+                            status = snippetStatus.status.toString(),
+                            extension = extension,
+                        ),
+                    ),
+                ).doOnSuccess {
+                    logger.info("Snippet edited successfully for id: $id")
+                }.doOnError { error ->
+                    logger.error("Error editing snippet with id: $id", error)
+                }
+        } catch (e: Exception) {
+            logger.error("Exception in editSnippet", e)
+            throw e
+        }
     }
 
     override fun searchSnippetsByFilter(
@@ -124,39 +155,52 @@ class SnippetManagerServiceImpl(
         size: Int,
         userData: Jwt,
     ): Page<SnippetViewDTO> {
+        logger.debug("Entering searchSnippetsByFilter")
+        val userEmail = userData.claims["email"].toString()
         val pageAndSizeRequest: Pageable = PageRequest.of(page, size, Sort.by("id").descending())
-        return filterRepository.filterSnippets(filter, pageAndSizeRequest, userData.claims["email"].toString())
+        return filterRepository.filterSnippets(filter, pageAndSizeRequest, userEmail)
     }
 
     override fun getSnippetById(
         id: Long,
         userData: Jwt,
     ): SnippetOutputDTO {
-        val snippet = snippetRepository.findById(id)
-        if (snippet.isEmpty) throw Exception("Snippet no encontrado")
+        logger.debug("Entering getSnippetById with snippetId: $id")
+        val userEmail = userData.claims["email"].toString()
+        return try {
+            val snippet =
+                snippetRepository.findById(id).orElseThrow {
+                    logger.error("Snippet not found with id: $id")
+                    Exception("Snippet not found")
+                }
 
-        val email = userData.claims["email"].toString()
+            if (snippet.author != userEmail && !sharedSnippetRepository.findBySnippetIdAndUserEmail(id, userEmail)) {
+                logger.warn("Unauthorized attempt to view snippet by user: $userEmail")
+                throw Exception("Unauthorized")
+            }
 
-        if (snippet.get().author != email && !sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
-            throw Exception(
-                "No tienes permisos para ver este snippet",
+            val code = assetService.getSnippetFromBucket(id)
+            val status =
+                snippetStatusRepository.findBySnippetIdAndUserEmail(id, snippet.author)
+                    .orElseThrow {
+                        logger.error("Snippet status not found for id: $id and user: $userEmail")
+                        Exception("Snippet status not found")
+                    }
+
+            val extension = languageToExtension(snippet.language)
+            SnippetOutputDTO(
+                id = snippet.id,
+                name = snippet.name,
+                language = snippet.language,
+                code = code,
+                author = snippet.author,
+                status = status.status.toString(),
+                extension = extension,
             )
+        } catch (e: Exception) {
+            logger.error("Exception in getSnippetById", e)
+            throw e
         }
-
-        val code = assetService.getSnippetFromBucket(id)
-        val status = snippetStatusRepository.findBySnippetIdAndUserEmail(id, snippet.get().author)
-        if (status.isEmpty) throw Exception("No se encontro el estado del snippet")
-        val extension = languageToExtension(snippet.get().language)
-
-        return SnippetOutputDTO(
-            id = snippet.get().id,
-            name = snippet.get().name,
-            language = snippet.get().language,
-            code = code,
-            author = snippet.get().author,
-            status = status.get().status.toString(),
-            extension = extension,
-        )
     }
 
     override fun shareSnippet(
@@ -164,25 +208,41 @@ class SnippetManagerServiceImpl(
         userData: Jwt,
         shareEmail: String,
     ) {
-        val snippet = snippetRepository.findById(id)
-        if (snippet.isEmpty) throw Exception("Snippet no encontrado")
+        logger.debug("Entering shareSnippet with snippetId: $id")
+        val userEmail = userData.claims["email"].toString()
+        try {
+            val snippet =
+                snippetRepository.findById(id).orElseThrow {
+                    logger.error("Snippet not found with id: $id")
+                    Exception("Snippet not found")
+                }
 
-        if (snippet.get().author != userData.claims["email"].toString()) throw Exception("No tienes permisos para compartir este snippet")
-        if (sharedSnippetRepository.findBySnippetIdAndUserEmail(
-                id,
-                shareEmail,
+            if (snippet.author != userEmail) {
+                logger.warn("Unauthorized attempt to share snippet by user: $userEmail")
+                throw Exception("Unauthorized")
+            }
+
+            if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, shareEmail)) {
+                logger.warn("Snippet already shared with user: $shareEmail")
+                throw Exception("Snippet already shared with this user")
+            }
+
+            if (snippet.author == shareEmail) {
+                logger.warn("Attempt to share snippet with self by user: $userEmail")
+                throw Exception("Cannot share snippet with self")
+            }
+
+            sharedSnippetRepository.save(
+                SharedSnippet(
+                    userEmail = shareEmail,
+                    snippet = snippet,
+                ),
             )
-        ) {
-            throw Exception("Ya compartiste este snippet con este usuario")
+            logger.info("Snippet shared successfully with user: $shareEmail")
+        } catch (e: Exception) {
+            logger.error("Exception in shareSnippet", e)
+            throw e
         }
-        if (snippet.get().author == shareEmail) throw Exception("No puedes compartir un snippet contigo mismo")
-
-        sharedSnippetRepository.save(
-            SharedSnippet(
-                userEmail = shareEmail,
-                snippet = snippet.get(),
-            ),
-        )
     }
 
     override fun updateSnippetStatus(
@@ -190,51 +250,91 @@ class SnippetManagerServiceImpl(
         status: SnippetStatusEnum,
         authorEmail: String,
     ) {
-        val snippetStatus = snippetStatusRepository.findBySnippetIdAndUserEmail(id, authorEmail)
-        if (snippetStatus.isEmpty) throw Exception("No existe el snippet")
+        logger.debug("Entering updateSnippetStatus with snippetId: $id and status: $status")
+        try {
+            val snippetStatus =
+                snippetStatusRepository.findBySnippetIdAndUserEmail(id, authorEmail)
+                    .orElseThrow {
+                        logger.error("Snippet status not found for id: $id and user: $authorEmail")
+                        Exception("Snippet status not found")
+                    }
 
-        snippetStatus.get().status = status
-        snippetStatusRepository.save(snippetStatus.get())
+            snippetStatus.status = status
+            snippetStatusRepository.save(snippetStatus)
+            logger.info("Snippet status updated to $status for snippetId: $id")
+        } catch (e: Exception) {
+            logger.error("Exception in updateSnippetStatus", e)
+            throw e
+        }
     }
 
     override fun updateSnippetSCA(
         rules: SCARulesDTO,
         userData: Jwt,
     ) {
-        val authorEmail = userData.claims["email"].toString()
-        snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
-        printScriptService.analyzeAllSnippets(rules, userData)
+        logger.debug("Entering updateSnippetSCA")
+        try {
+            val userEmail = userData.claims["email"].toString()
+            snippetStatusRepository.updateStatusByUserEmail(userEmail, SnippetStatusEnum.PENDING)
+            printScriptService.analyzeAllSnippets(rules, userData)
+            logger.info("SCA analysis initiated for user: $userEmail")
+        } catch (e: Exception) {
+            logger.error("Exception in updateSnippetSCA", e)
+            throw e
+        }
     }
 
     override fun updateSnippetFormat(
         rules: FormatRulesDTO,
         userData: Jwt,
     ) {
-        val authorEmail = userData.claims["email"].toString()
-        snippetStatusRepository.updateStatusByUserEmail(authorEmail, SnippetStatusEnum.PENDING)
-        printScriptService.formatAllSnippets(rules, userData)
+        logger.debug("Entering updateSnippetFormat")
+        try {
+            val userEmail = userData.claims["email"].toString()
+            snippetStatusRepository.updateStatusByUserEmail(userEmail, SnippetStatusEnum.PENDING)
+            printScriptService.formatAllSnippets(rules, userData)
+            logger.info("Formatting initiated for user: $userEmail")
+        } catch (e: Exception) {
+            logger.error("Exception in updateSnippetFormat", e)
+            throw e
+        }
     }
 
     override fun deleteSnippet(
         id: Long,
         userData: Jwt,
     ) {
-        val snippet = snippetRepository.findById(id)
-        val email = userData.claims["email"].toString()
-        if (snippet.get().author != email) {
-            if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, email)) {
-                sharedSnippetRepository.deleteBySnippetIdAndUserEmail(id, email)
-                snippetStatusRepository.deleteBySnippetIdAndUserEmail(id, email)
-                return
+        logger.debug("Entering deleteSnippet with snippetId: $id")
+        val userEmail = userData.claims["email"].toString()
+        try {
+            val snippet =
+                snippetRepository.findById(id).orElseThrow {
+                    logger.error("Snippet not found with id: $id")
+                    Exception("Snippet not found")
+                }
+
+            if (snippet.author != userEmail) {
+                if (sharedSnippetRepository.findBySnippetIdAndUserEmail(id, userEmail)) {
+                    sharedSnippetRepository.deleteBySnippetIdAndUserEmail(id, userEmail)
+                    snippetStatusRepository.deleteBySnippetIdAndUserEmail(id, userEmail)
+                    logger.info("Shared snippet deleted for user: $userEmail")
+                } else {
+                    logger.warn("Unauthorized attempt to delete snippet by user: $userEmail")
+                    throw Exception("Unauthorized")
+                }
             } else {
-                throw Exception("No tienes permisos para borrar este snippet")
+                assetService.deleteSnippetFromBucket(id).block()
+                snippetRepository.deleteById(id)
+                logger.info("Snippet deleted with id: $id")
             }
+        } catch (e: Exception) {
+            logger.error("Exception in deleteSnippet", e)
+            throw e
         }
-        assetService.deleteSnippetFromBucket(id).block()
-        snippetRepository.deleteById(id)
     }
 
     override fun getFileTypes(): List<FileTypeDTO> {
+        logger.debug("Entering getFileTypes")
         return languages.map { FileTypeDTO(it, languageToExtension(it)) }
     }
 
@@ -252,11 +352,9 @@ class SnippetManagerServiceImpl(
 
     private fun getHeader(): HttpHeaders {
         val correlationId = MDC.get(CORRELATION_ID_KEY)
-        val headers =
-            HttpHeaders().apply {
-                contentType = MediaType.APPLICATION_JSON
-                set("X-Correlation-Id", correlationId)
-            }
-        return headers
+        return HttpHeaders().apply {
+            contentType = MediaType.APPLICATION_JSON
+            set("X-Correlation-Id", correlationId)
+        }
     }
 }
