@@ -3,9 +3,9 @@ package printscript.snippetManager.service.implementations
 import io.github.cdimascio.dotenv.Dotenv
 import log.CorrIdFilter.Companion.CORRELATION_ID_KEY
 import org.slf4j.MDC
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import printscript.snippetManager.service.interfaces.AssetService
@@ -27,7 +27,7 @@ class AssetServiceImpl(
         return webClient.post()
             .uri(snippetUrl)
             .bodyValue(code)
-            .headers{httpHeaders -> httpHeaders.addAll(headers)}
+            .headers { httpHeaders -> httpHeaders.addAll(headers) }
             .retrieve()
             .onStatus({ it.is4xxClientError || it.is5xxServerError }, {
                 it.bodyToMono(String::class.java)
@@ -42,7 +42,7 @@ class AssetServiceImpl(
         val headers = getHeader()
         return webClient.get()
             .uri(snippetUrl)
-            .headers{httpHeaders -> httpHeaders.addAll(headers)}
+            .headers { httpHeaders -> httpHeaders.addAll(headers) }
             .retrieve()
             .onStatus({ it.is4xxClientError || it.is5xxServerError }, {
                 it.bodyToMono(String::class.java)
@@ -57,7 +57,7 @@ class AssetServiceImpl(
         val headers = getHeader()
         return webClient.delete()
             .uri(snippetUrl)
-            .headers{httpHeaders -> httpHeaders.addAll(headers)}
+            .headers { httpHeaders -> httpHeaders.addAll(headers) }
             .retrieve()
             .onStatus({ it.is4xxClientError || it.is5xxServerError }, {
                 it.bodyToMono(String::class.java)
@@ -66,6 +66,7 @@ class AssetServiceImpl(
             .toBodilessEntity()
             .then()
     }
+
     private fun getHeader(): HttpHeaders {
         val correlationId = MDC.get(CORRELATION_ID_KEY)
         val headers =
