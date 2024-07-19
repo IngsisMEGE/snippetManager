@@ -76,6 +76,7 @@ class SnippetManagerServiceImpl(
                         ),
                     ),
                 ).doOnSuccess {
+                    printScriptService.analyzeSnippet(savedSnippet.id, userData)
                     logger.info("Snippet created successfully for user: $userEmail")
                 }.doOnError { error ->
                     snippetStatusRepository.delete(snippetStatusEnum)
@@ -135,6 +136,7 @@ class SnippetManagerServiceImpl(
                         ),
                     ),
                 ).doOnSuccess {
+                    printScriptService.analyzeSnippet(snippet.id, userData)
                     logger.info("Snippet edited successfully for id: $id")
                 }.doOnError { error ->
                     logger.error("Error editing snippet with id: $id", error)
