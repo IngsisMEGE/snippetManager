@@ -19,7 +19,7 @@ class SnippetProcessingServiceImpl(
 
     @Scheduled(fixedDelay = 20000)
     fun processQueue() {
-        val requestData = redisTemplate.opsForList().leftPop("snippet_sca_status")
+        val requestData = redisTemplate.opsForList().rightPop("snippet_sca_queue")
         if (requestData != null) {
             logger.info("Processing snippet status update request")
             println("Processing snippet sca queue")
