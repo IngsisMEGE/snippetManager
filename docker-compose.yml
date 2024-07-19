@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
-  snippetManagerDB:
+  snippetManagerPostgres:
     image: postgres:latest
     ports:
       - "5433:5433"
     env_file:
       - .env
+    volumes:
+      - snippet_manager_data:/var/lib/postgresql/data
 
   snipperManagerAPI:
     image: snippetmanagerapi
@@ -15,11 +17,34 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
-    depends_on:
-      - snippetManagerDB
     env_file:
       - .env
+    depends_on:
+      - snippetManagerPostgres
 
+
+  api:
+    container_name: "asset_service"
+    image: ghcr.io/austral-ingsis/snippet-asset-service:latest
+    ports:
+       - "8080:8080"
+    environment:
+      AZURE_HOST: "http://azurite"
+      NEW_RELIC_AGENT_ENABLED: false
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "azurite"
+    hostname: azurite
+    restart: always
+    ports:
+        - "10000:10000"
+        - "10001:10001"
+        - "10002:10002"
+    volumes:
+      - blob:/workspace
 
 volumes:
-  postgres_data:
+  snippet_manager_data:
+  blob:
+      external: false
