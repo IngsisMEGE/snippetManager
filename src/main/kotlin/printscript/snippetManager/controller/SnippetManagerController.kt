@@ -126,4 +126,17 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     fun getFileTypes(): ResponseEntity<List<FileTypeDTO>> {
         return ResponseEntity.ok(snippetManagerService.getFileTypes())
     }
+
+    @PutMapping("/update/status")
+    fun updateSnippetStatus(
+        @AuthenticationPrincipal userData: Jwt,
+        @RequestBody statusDTO: StatusDTO,
+    ): ResponseEntity<Any> {
+        return try {
+            snippetManagerService.updateSnippetStatus(statusDTO.id, statusDTO.status, userData.claims["email"].toString())
+            ResponseEntity.ok("Status Updated Correctly")
+        } catch (e: Exception) {
+            ResponseEntity.badRequest().body(e.message)
+        }
+    }
 }
