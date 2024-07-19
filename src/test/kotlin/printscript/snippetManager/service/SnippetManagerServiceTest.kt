@@ -3,7 +3,9 @@ package printscript.snippetManager.service
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.Page
 import org.springframework.security.oauth2.jwt.Jwt
