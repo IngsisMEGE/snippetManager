@@ -1,20 +1,12 @@
 package printscript.snippetManager.service
 
-import org.junit.jupiter.api.Test
-import printscript.snippetManager.repository.FilterRepository
-import printscript.snippetManager.repository.SharedSnippetRepository
-import printscript.snippetManager.repository.SnippetRepository
-import printscript.snippetManager.repository.SnippetStatusRepository
-import printscript.snippetManager.service.interfaces.AssetService
-import printscript.snippetManager.service.interfaces.PrintScriptService
-import printscript.snippetManager.service.implementations.SnippetManagerServiceImpl
-import printscript.snippetManager.service.interfaces.SnippetManagerService
-import org.springframework.security.oauth2.jwt.Jwt
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.Page
+import org.springframework.security.oauth2.jwt.Jwt
 import printscript.snippetManager.controller.payload.request.*
 import printscript.snippetManager.controller.payload.response.FileTypeDTO
 import printscript.snippetManager.controller.payload.response.RulesDTO
@@ -23,9 +15,16 @@ import printscript.snippetManager.entity.SharedSnippet
 import printscript.snippetManager.entity.Snippet
 import printscript.snippetManager.entity.SnippetStatus
 import printscript.snippetManager.enums.SnippetStatusEnum
+import printscript.snippetManager.repository.FilterRepository
+import printscript.snippetManager.repository.SharedSnippetRepository
+import printscript.snippetManager.repository.SnippetRepository
+import printscript.snippetManager.repository.SnippetStatusRepository
+import printscript.snippetManager.service.implementations.SnippetManagerServiceImpl
+import printscript.snippetManager.service.interfaces.AssetService
+import printscript.snippetManager.service.interfaces.PrintScriptService
+import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
 import java.util.Optional
-
 
 class SnippetManagerServiceTest {
     private val snippetRepository: SnippetRepository = mock()
@@ -34,14 +33,15 @@ class SnippetManagerServiceTest {
     private val filterRepository: FilterRepository = mock()
     private val sharedSnippetRepository: SharedSnippetRepository = mock()
     private val printScriptService: PrintScriptService = mock()
-    private val snippetManagerService: SnippetManagerService = SnippetManagerServiceImpl(
-        snippetRepository,
-        snippetStatusRepository,
-        assetService,
-        filterRepository,
-        sharedSnippetRepository,
-        printScriptService
-    )
+    private val snippetManagerService: SnippetManagerService =
+        SnippetManagerServiceImpl(
+            snippetRepository,
+            snippetStatusRepository,
+            assetService,
+            filterRepository,
+            sharedSnippetRepository,
+            printScriptService,
+        )
 
     val testJwt = "test"
     val jwt =
@@ -59,9 +59,9 @@ class SnippetManagerServiceTest {
                 SnippetStatus(
                     "test@test.com",
                     mockedSnippet,
-                    SnippetStatusEnum.PENDING
-                )
-            )
+                    SnippetStatusEnum.PENDING,
+                ),
+            ),
         ).thenReturn(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING))
         whenever(assetService.saveSnippetInBucket(0, "println(\"Hello World\")")).thenReturn(Mono.empty())
 
@@ -81,9 +81,10 @@ class SnippetManagerServiceTest {
 
         whenever(snippetRepository.save(mockedSnippet)).thenThrow(RuntimeException("Failed to save snippet"))
 
-        val exception = assertThrows<RuntimeException> {
-            snippetManagerService.createSnippet(dto, jwt).block()
-        }
+        val exception =
+            assertThrows<RuntimeException> {
+                snippetManagerService.createSnippet(dto, jwt).block()
+            }
 
         assertEquals("Failed to save snippet", exception.message)
     }
@@ -97,21 +98,22 @@ class SnippetManagerServiceTest {
                 SnippetStatus(
                     "test@test.com",
                     mockedSnippet,
-                    SnippetStatusEnum.PENDING
-                )
-            )
+                    SnippetStatusEnum.PENDING,
+                ),
+            ),
         ).thenReturn(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING))
         whenever(
             assetService.saveSnippetInBucket(
                 0,
-                "println(\"Hello World\")"
-            )
+                "println(\"Hello World\")",
+            ),
         ).thenReturn(Mono.error(RuntimeException("Failed to save snippet in bucket")))
 
         val dto = SnippetInputDTO("test", "java", "println(\"Hello World\")", "java")
-        val snippet = assertThrows<RuntimeException> {
-            snippetManagerService.createSnippet(dto, jwt).block()
-        }
+        val snippet =
+            assertThrows<RuntimeException> {
+                snippetManagerService.createSnippet(dto, jwt).block()
+            }
 
         assertEquals("Failed to save snippet in bucket", snippet.message)
     }
@@ -125,17 +127,17 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
-                "test@test.com"
-            )
+                "test@test.com",
+            ),
         ).thenReturn(Optional.of(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING)))
         whenever(
             snippetStatusRepository.save(
                 SnippetStatus(
                     "test@test.com",
                     mockedSnippet,
-                    SnippetStatusEnum.PENDING
-                )
-            )
+                    SnippetStatusEnum.PENDING,
+                ),
+            ),
         ).thenReturn(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING))
         whenever(assetService.deleteSnippetFromBucket(snippetId)).thenReturn(Mono.empty())
         whenever(assetService.saveSnippetInBucket(snippetId, "println(\"Hello World\")")).thenReturn(Mono.empty())
@@ -151,9 +153,10 @@ class SnippetManagerServiceTest {
         val editedCode = SnippetEditDTO("println(\"Hello World\")")
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.empty())
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.editSnippet(snippetId, editedCode, jwt).block()
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.editSnippet(snippetId, editedCode, jwt).block()
+            }
 
         assertEquals("Snippet not found", exception.message)
     }
@@ -165,9 +168,10 @@ class SnippetManagerServiceTest {
         val mockedSnippet = Snippet("test", "java", "test2@test2.com")
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.of(mockedSnippet))
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.editSnippet(snippetId, editedCode, jwt).block()
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.editSnippet(snippetId, editedCode, jwt).block()
+            }
 
         assertEquals("Unauthorized", exception.message)
     }
@@ -181,13 +185,14 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
-                "test@test.com"
-            )
+                "test@test.com",
+            ),
         ).thenReturn(Optional.empty())
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.editSnippet(snippetId, editedCode, jwt).block()
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.editSnippet(snippetId, editedCode, jwt).block()
+            }
 
         assertEquals("Snippet status not found", exception.message)
     }
@@ -201,23 +206,23 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
-                "test@test.com"
-            )
+                "test@test.com",
+            ),
         ).thenReturn(Optional.of(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING)))
         whenever(
             snippetStatusRepository.save(
                 SnippetStatus(
                     "test@test.com",
                     mockedSnippet,
-                    SnippetStatusEnum.PENDING
-                )
-            )
+                    SnippetStatusEnum.PENDING,
+                ),
+            ),
         ).thenReturn(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING))
         whenever(assetService.deleteSnippetFromBucket(snippetId)).thenReturn(Mono.empty())
         whenever(assetService.saveSnippetInBucket(snippetId, "println(\"Hello World\")")).thenReturn(
             Mono.error(
-                RuntimeException("Failed to save snippet in bucket")
-            )
+                RuntimeException("Failed to save snippet in bucket"),
+            ),
         )
 
         val snippet =
@@ -243,8 +248,8 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
-                "test@test.com"
-            )
+                "test@test.com",
+            ),
         ).thenReturn(Optional.of(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING)))
         whenever(assetService.getSnippetFromBucket(snippetId)).thenReturn("println(\"Hello World\")")
 
@@ -258,9 +263,10 @@ class SnippetManagerServiceTest {
         val snippetId = 0L
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.empty())
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.getSnippetById(snippetId, jwt)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.getSnippetById(snippetId, jwt)
+            }
 
         assertEquals("Snippet not found", exception.message)
     }
@@ -271,9 +277,10 @@ class SnippetManagerServiceTest {
         val mockedSnippet = Snippet("test", "java", "test2@test2.com")
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.of(mockedSnippet))
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.getSnippetById(snippetId, jwt)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.getSnippetById(snippetId, jwt)
+            }
 
         assertEquals("Unauthorized", exception.message)
     }
@@ -286,13 +293,14 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
-                "test@test.com"
-            )
+                "test@test.com",
+            ),
         ).thenReturn(Optional.empty())
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.getSnippetById(snippetId, jwt)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.getSnippetById(snippetId, jwt)
+            }
 
         assertEquals("Snippet status not found", exception.message)
     }
@@ -307,8 +315,8 @@ class SnippetManagerServiceTest {
         whenever(sharedSnippetRepository.save(SharedSnippet(userEmail, mockedSnippet))).thenReturn(
             SharedSnippet(
                 userEmail,
-                mockedSnippet
-            )
+                mockedSnippet,
+            ),
         )
 
         val sharedSnippet = snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
@@ -322,9 +330,10 @@ class SnippetManagerServiceTest {
         val userEmail = "test2@test2.com"
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.empty())
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
+            }
 
         assertEquals("Snippet not found", exception.message)
     }
@@ -336,9 +345,10 @@ class SnippetManagerServiceTest {
         val mockedSnippet = Snippet("test", "java", "test3@test3.com")
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.of(mockedSnippet))
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
+            }
 
         assertEquals("Unauthorized", exception.message)
     }
@@ -351,9 +361,10 @@ class SnippetManagerServiceTest {
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.of(mockedSnippet))
         whenever(sharedSnippetRepository.findBySnippetIdAndUserEmail(snippetId, userEmail)).thenReturn(true)
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
+            }
 
         assertEquals("Snippet already shared with this user", exception.message)
     }
@@ -365,9 +376,10 @@ class SnippetManagerServiceTest {
         val mockedSnippet = Snippet("test", "java", "test@test.com")
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.of(mockedSnippet))
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.shareSnippet(snippetId, jwt, userEmail)
+            }
 
         assertEquals("Cannot share snippet with self", exception.message)
     }
@@ -381,11 +393,11 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
-                "test@test.com"
-            )
+                "test@test.com",
+            ),
         ).thenReturn(Optional.of(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING)))
         whenever(snippetStatusRepository.save(SnippetStatus("test@test.com", mockedSnippet, status))).thenReturn(
-            SnippetStatus("test@test.com", mockedSnippet, status)
+            SnippetStatus("test@test.com", mockedSnippet, status),
         )
 
         val updatedSnippet = snippetManagerService.updateSnippetStatus(snippetId, status, "test@test.com")
@@ -399,9 +411,10 @@ class SnippetManagerServiceTest {
         val status = SnippetStatusEnum.COMPLIANT
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.empty())
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.updateSnippetStatus(snippetId, status, "test@test.com")
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.updateSnippetStatus(snippetId, status, "test@test.com")
+            }
 
         assertEquals("Snippet status not found", exception.message)
     }
@@ -412,8 +425,8 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.updateStatusByUserEmail(
                 "test@test.com",
-                SnippetStatusEnum.COMPLIANT
-            )
+                SnippetStatusEnum.COMPLIANT,
+            ),
         ).thenReturn(1)
         doNothing().`when`(printScriptService).analyzeAllSnippets(sca, jwt)
 
@@ -429,13 +442,14 @@ class SnippetManagerServiceTest {
             snippetStatusRepository.updateStatusByUserEmail(
                 "test2@test2.com",
                 SnippetStatusEnum.COMPLIANT,
-            )
+            ),
         ).thenReturn(0)
         doThrow(RuntimeException("Custom exception message")).`when`(printScriptService).analyzeAllSnippets(sca, jwt)
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.updateSnippetSCA(sca, jwt)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.updateSnippetSCA(sca, jwt)
+            }
 
         assertEquals("Custom exception message", exception.message)
     }
@@ -448,7 +462,7 @@ class SnippetManagerServiceTest {
             snippetStatusRepository.updateStatusByUserEmail(
                 "test@test.com",
                 SnippetStatusEnum.COMPLIANT,
-            )
+            ),
         ).thenReturn(1)
         doNothing().`when`(printScriptService).formatAllSnippets(format, jwt)
 
@@ -465,13 +479,14 @@ class SnippetManagerServiceTest {
             snippetStatusRepository.updateStatusByUserEmail(
                 "test@test.com",
                 SnippetStatusEnum.COMPLIANT,
-            )
+            ),
         ).thenReturn(0)
         doThrow(RuntimeException("Custom exception message")).`when`(printScriptService).formatAllSnippets(format, jwt)
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.updateSnippetFormat(format, jwt)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.updateSnippetFormat(format, jwt)
+            }
 
         assertEquals("Custom exception message", exception.message)
     }
@@ -484,8 +499,8 @@ class SnippetManagerServiceTest {
         whenever(
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
-                "test@test.com"
-            )
+                "test@test.com",
+            ),
         ).thenReturn(Optional.of(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING)))
         whenever(assetService.deleteSnippetFromBucket(snippetId)).thenReturn(Mono.empty())
         doNothing().`when`(snippetRepository).deleteById(snippetId)
@@ -500,9 +515,10 @@ class SnippetManagerServiceTest {
         val snippetId = 0L
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.empty())
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.deleteSnippet(snippetId, jwt)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.deleteSnippet(snippetId, jwt)
+            }
 
         assertEquals("Snippet not found", exception.message)
     }
@@ -513,9 +529,10 @@ class SnippetManagerServiceTest {
         val mockedSnippet = Snippet("test", "java", "test2@test2.com")
         whenever(snippetRepository.findById(snippetId)).thenReturn(Optional.of(mockedSnippet))
 
-        val exception = assertThrows<Exception> {
-            snippetManagerService.deleteSnippet(snippetId, jwt)
-        }
+        val exception =
+            assertThrows<Exception> {
+                snippetManagerService.deleteSnippet(snippetId, jwt)
+            }
 
         assertEquals("Unauthorized", exception.message)
     }
@@ -531,7 +548,7 @@ class SnippetManagerServiceTest {
             snippetStatusRepository.findBySnippetIdAndUserEmail(
                 snippetId,
                 "test@test.com",
-            )
+            ),
         ).thenReturn(Optional.of(SnippetStatus("test@test.com", mockedSnippet, SnippetStatusEnum.PENDING)))
         whenever(assetService.deleteSnippetFromBucket(snippetId)).thenReturn(Mono.empty())
         doNothing().`when`(snippetRepository).deleteById(snippetId)
@@ -539,13 +556,15 @@ class SnippetManagerServiceTest {
         val result = snippetManagerService.deleteSnippet(snippetId, jwt)
 
         assertEquals(Unit, result)
-        }
+    }
 
     @Test
     fun test029_getFileTypesSuccess() {
         val fileTypes = snippetManagerService.getFileTypes()
 
-        assertEquals(listOf(FileTypeDTO("Java","java" ), FileTypeDTO("Python", "py"), FileTypeDTO("Go", "go"), FileTypeDTO("Printscript", "prs")), fileTypes)
+        assertEquals(
+            listOf(FileTypeDTO("Java", "java"), FileTypeDTO("Python", "py"), FileTypeDTO("Go", "go"), FileTypeDTO("Printscript", "prs")),
+            fileTypes,
+        )
     }
-
 }
