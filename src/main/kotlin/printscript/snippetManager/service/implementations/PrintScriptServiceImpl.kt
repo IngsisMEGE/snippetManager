@@ -1,6 +1,6 @@
 package printscript.snippetManager.service.implementations
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.RedisTemplate
@@ -16,9 +16,9 @@ import printscript.snippetManager.service.interfaces.PrintScriptService
 class PrintScriptServiceImpl(
     private val redisTemplate: RedisTemplate<String, Any>,
     private val snippetRepository: SnippetRepository,
+    private val objectMapper: ObjectMapper,
 ) : PrintScriptService {
     private val logger: Logger = LoggerFactory.getLogger(PrintScriptServiceImpl::class.java)
-    private val objectMapper = jacksonObjectMapper()
 
     override fun analyzeAllSnippets(
         scaSnippetRules: SCARulesDTO,

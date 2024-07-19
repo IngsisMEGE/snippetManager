@@ -1,6 +1,6 @@
 package printscript.snippetManager.service.implementations
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -11,9 +11,8 @@ import printscript.snippetManager.service.interfaces.SnippetManagerService
 class SnippetProcessingServiceImpl(
     private val redisTemplate: RedisTemplate<String, String>,
     private val snippetManagerService: SnippetManagerService,
+    private val objectMapper: ObjectMapper,
 ) {
-    private val objectMapper = jacksonObjectMapper()
-
     @Scheduled(fixedDelay = 1000)
     fun processQueue() {
         val requestData = redisTemplate.opsForList().leftPop("snippet_sca_status")
