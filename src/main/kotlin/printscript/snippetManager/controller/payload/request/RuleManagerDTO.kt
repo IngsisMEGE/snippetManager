@@ -14,7 +14,7 @@ data class SCARulesDTO(
 
 data class SCARuleEndpoint(
     val scaRules: List<RulesDTO>,
-    val lintingRules: List<RulesDTO>
+    val lintingRules: List<RulesDTO>,
 )
 
 data class UpdateAction(
