@@ -56,3 +56,15 @@ jobs:
           tags: |
             ghcr.io/ingsismege/snippetmanager:latest
             ghcr.io/ingsismege/snippetmanager:${{ env.VERSION }}
+            
+      - name: Update prod server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_PROD }}
+          username: ${{ secrets.USER_PROD }}
+          key: ${{ secrets.KEY_PROD }}
+          script: |
+            cd INFRAingsis/prod/
+            docker compose -f docker-compose.prod.yml stop printscriptApi
+            docker compose -f docker-compose.prod.yml pull printscriptApi
+            docker compose -f docker-compose.prod.yml up printscriptApi -d --build

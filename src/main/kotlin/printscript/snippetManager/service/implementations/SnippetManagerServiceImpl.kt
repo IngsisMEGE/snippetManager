@@ -1,15 +1,11 @@
 package printscript.snippetManager.service.implementations
 
-import logs.CorrIdFilter.Companion.CORRELATION_ID_KEY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import printscript.snippetManager.controller.payload.request.*
@@ -349,12 +345,4 @@ class SnippetManagerServiceImpl(
     }
 
     private val languages = listOf("Java", "Python", "Go", "Printscript")
-
-    private fun getHeader(): HttpHeaders {
-        val correlationId = MDC.get(CORRELATION_ID_KEY)
-        return HttpHeaders().apply {
-            contentType = MediaType.APPLICATION_JSON
-            set("X-Correlation-Id", correlationId)
-        }
-    }
 }
