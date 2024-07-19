@@ -133,7 +133,7 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
         @RequestBody statusDTO: StatusDTO,
     ): ResponseEntity<Any> {
         return try {
-            snippetManagerService.updateSnippetStatus(statusDTO.id, statusDTO.status, userData.claims["email"].toString())
+            snippetManagerService.updateSnippetStatus(statusDTO.id, statusDTO.status, statusDTO.ownerEmail)
             ResponseEntity.ok("Status Updated Correctly")
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)
