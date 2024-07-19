@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import printscript.snippetManager.controller.payload.request.*
-import printscript.snippetManager.controller.payload.response.FileTypeDTO
-import printscript.snippetManager.controller.payload.response.SnippetOutputDTO
+import printscript.snippetManager.controller.payload.response.*
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 import reactor.core.publisher.Mono
 
@@ -86,10 +85,11 @@ class SnippetManagerController(val snippetManagerService: SnippetManagerService)
     @PutMapping("/pending/user/sca")
     fun updateSnippetFromUpdateRulesSCA(
         @AuthenticationPrincipal userData: Jwt,
-        @RequestBody rules: SCARulesDTO,
+        @RequestBody rules: SCARuleEndpoint,
     ): ResponseEntity<Any> {
         return try {
-            snippetManagerService.updateSnippetSCA(rules, userData)
+            val language = Language.Printscript
+            snippetManagerService.updateSnippetSCA(SCARulesDTO(rules.scaRules, language), userData)
             ResponseEntity.ok("Status Updated Correctly")
         } catch (e: Exception) {
             ResponseEntity.badRequest().body(e.message)

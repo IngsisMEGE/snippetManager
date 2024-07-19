@@ -12,6 +12,11 @@ data class SCARulesDTO(
     val language: Language,
 )
 
+data class SCARuleEndpoint(
+    val scaRules: List<RulesDTO>,
+    val language: String,
+)
+
 data class UpdateAction(
     val lexer: Boolean,
     val formatter: Boolean,
