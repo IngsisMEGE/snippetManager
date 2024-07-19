@@ -8,10 +8,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import printscript.snippetManager.controller.payload.request.FormatRulesDTO
 import printscript.snippetManager.controller.payload.request.SCARulesDTO
-import printscript.snippetManager.controller.payload.response.FormatSnippetWithRulesDTO
-import printscript.snippetManager.controller.payload.response.FormatSnippetWithRulesRedisDTO
-import printscript.snippetManager.controller.payload.response.SCASnippetWithRulesDTO
-import printscript.snippetManager.controller.payload.response.SCASnippetWithRulesRedisDTO
+import printscript.snippetManager.controller.payload.response.*
 import printscript.snippetManager.repository.SnippetRepository
 import printscript.snippetManager.service.interfaces.PrintScriptService
 
@@ -73,5 +70,22 @@ class PrintScriptServiceImpl(
             logger.info("Queued snippet with id: ${snippetData.id} for formatting")
         }
         logger.debug("Exiting formatAllSnippets")
+    }
+
+    override fun analyzeSnippet(
+        snippetId: Long,
+        userData: Jwt,
+    ) {
+        logger.debug("Entering analyzeSnippet with snippetId: $snippetId")
+        val scaRulesRedisDTO =
+            SCASnippetRedisDTO(
+                snippetId,
+                userData,
+                Language.Printscript,
+            )
+        val requestData = objectMapper.writeValueAsString(scaRulesRedisDTO)
+        redisTemplate.opsForList().rightPush("snippet_sca_unique_queue", requestData)
+        logger.info("Queued snippet with id: $snippetId for SCA analysis")
+        logger.debug("Exiting analyzeSnippet with snippetId: $snippetId")
     }
 }

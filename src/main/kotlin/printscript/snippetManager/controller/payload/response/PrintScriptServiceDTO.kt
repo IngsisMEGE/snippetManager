@@ -24,6 +24,19 @@ data class SCASnippetWithRulesRedisDTO(
     val userData: Jwt,
 )
 
+data class SCASnippetRedisDTO(
+    val snippetId: Long,
+    val userData: Jwt,
+    val language: Language,
+)
+
+enum class Language {
+    Printscript,
+    Java,
+    Python,
+    Go,
+}
+
 data class FormatSnippetWithRulesRedisDTO(
     val formatSnippetWithRules: FormatSnippetWithRulesDTO,
     val userData: Jwt,
