@@ -35,7 +35,7 @@ class PrintScriptServiceImpl(
                     SCASnippetWithRulesDTO(
                         snippetData.id,
                         scaSnippetRules.scaRules,
-                        scaSnippetRules.lintingRules,
+                        scaSnippetRules.language,
                     ),
                     userData,
                 )
