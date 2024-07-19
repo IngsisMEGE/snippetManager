@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import printscript.snippetManager.controller.payload.request.StatusDTO
 import printscript.snippetManager.service.interfaces.SnippetManagerService
 
 @Service
+@EnableScheduling
 class SnippetProcessingServiceImpl(
     private val redisTemplate: RedisTemplate<String, String>,
     private val snippetManagerService: SnippetManagerService,
