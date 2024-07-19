@@ -349,12 +349,4 @@ class SnippetManagerServiceImpl(
     }
 
     private val languages = listOf("Java", "Python", "Go", "Printscript")
-
-    private fun getHeader(): HttpHeaders {
-        val correlationId = MDC.get(CORRELATION_ID_KEY)
-        return HttpHeaders().apply {
-            contentType = MediaType.APPLICATION_JSON
-            set("X-Correlation-Id", correlationId)
-        }
-    }
 }
