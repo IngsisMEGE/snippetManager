@@ -16,7 +16,7 @@ class SnippetProcessingServiceImpl(
 
     @Scheduled(fixedDelay = 1000)
     fun processQueue() {
-        val requestData = redisTemplate.opsForList().leftPop("snippet_sca_queue")
+        val requestData = redisTemplate.opsForList().leftPop("snippet_sca_status")
         if (requestData != null) {
             val updateStatus: StatusDTO = objectMapper.readValue(requestData.toString(), StatusDTO::class.java)
             snippetManagerService.updateSnippetStatus(

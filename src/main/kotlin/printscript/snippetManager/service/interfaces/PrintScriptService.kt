@@ -14,4 +14,9 @@ interface PrintScriptService {
         formatSnippetRules: FormatRulesDTO,
         userData: Jwt,
     )
+
+    fun analyzeSnippet(
+        snippetId: Long,
+        userData: Jwt,
+    )
 }
