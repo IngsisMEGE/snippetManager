@@ -19,8 +19,9 @@ class SnippetProcessingServiceImpl(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(SnippetProcessingServiceImpl::class.java)
 
-    @Scheduled(fixedDelay = 20000)
+    @Scheduled(fixedDelay = 10000)
     fun processQueue() {
+        println("called function")
         val requestData = redisTemplate.opsForList().rightPop("snippet_sca_queue")
         if (requestData != null) {
             logger.info("Processing snippet status update request")
