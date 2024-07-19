@@ -340,10 +340,10 @@ class SnippetManagerServiceImpl(
 
     private fun languageToExtension(language: String): String {
         return when (language.lowercase(Locale.getDefault())) {
-            "Java" -> "java"
-            "Python" -> "py"
-            "Go" -> "go"
-            "Printscript" -> "prs"
+            "java" -> "java"
+            "python" -> "py"
+            "go" -> "go"
+            "printscript" -> "prs"
             else -> "txt"
         }
     }
