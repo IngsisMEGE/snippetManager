@@ -10,9 +10,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.Page
 import org.springframework.security.oauth2.jwt.Jwt
 import printscript.snippetManager.controller.payload.request.*
-import printscript.snippetManager.controller.payload.response.FileTypeDTO
-import printscript.snippetManager.controller.payload.response.RulesDTO
-import printscript.snippetManager.controller.payload.response.SnippetViewDTO
+import printscript.snippetManager.controller.payload.response.*
 import printscript.snippetManager.entity.SharedSnippet
 import printscript.snippetManager.entity.Snippet
 import printscript.snippetManager.entity.SnippetStatus
@@ -423,7 +421,7 @@ class SnippetManagerServiceTest {
 
     @Test
     fun test021_updateSnippetSCASuccess() {
-        val sca = SCARulesDTO(listOf(RulesDTO("rule1", "description1")), listOf(RulesDTO("rule1", "description1")))
+        val sca = SCARulesDTO(listOf(RulesDTO("rule1", "description1")), Language.Printscript)
         whenever(
             snippetStatusRepository.updateStatusByUserEmail(
                 "test@test.com",
@@ -439,7 +437,7 @@ class SnippetManagerServiceTest {
 
     @Test
     fun test022_updateSnippetSCAFail() {
-        val sca = SCARulesDTO(listOf(RulesDTO("rule1", "description1")), listOf(RulesDTO("rule1", "description1")))
+        val sca = SCARulesDTO(listOf(RulesDTO("rule1", "description1")), Language.Printscript)
         whenever(
             snippetStatusRepository.updateStatusByUserEmail(
                 "test2@test2.com",

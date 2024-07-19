@@ -1,6 +1,6 @@
 package printscript.snippetManager.controller.payload.request
 
-import printscript.snippetManager.controller.payload.response.RulesDTO
+import printscript.snippetManager.controller.payload.response.*
 
 data class FormatRulesDTO(
     val formatRules: List<RulesDTO>,
@@ -9,7 +9,7 @@ data class FormatRulesDTO(
 
 data class SCARulesDTO(
     val scaRules: List<RulesDTO>,
-    val lintingRules: List<RulesDTO>,
+    val language: Language,
 )
 
 data class UpdateAction(
