@@ -40,7 +40,7 @@ class PrintScriptServiceImpl(
                     userData,
                 )
             val requestData = objectMapper.writeValueAsString(scaRulesRedisDTO)
-            redisTemplate.opsForList().rightPush("snippet_sca_queue", requestData)
+            redisTemplate.opsForList().rightPush("snippet_sca_queue_large", requestData)
             logger.info("Queued snippet with id: ${snippetData.id} for SCA analysis")
         }
         logger.debug("Exiting analyzeAllSnippets")
